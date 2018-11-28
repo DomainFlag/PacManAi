@@ -9,9 +9,4 @@ public class Wall extends Field {
 
         this.type = type;
     }
-
-    @Override
-    public void update() {
-
-    }
 }
