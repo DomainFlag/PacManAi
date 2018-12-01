@@ -2,8 +2,9 @@ package models;
 
 import javafx.scene.image.Image;
 import javafx.scene.image.WritableImage;
-import views.ViewField;
+import javafx.scene.layout.Pane;
 
+import java.awt.image.BufferedImage;
 import java.util.Observable;
 
 public abstract class Field extends Observable {
@@ -27,7 +28,17 @@ public abstract class Field extends Observable {
         return type;
     }
 
-    public Image inflate() {
+    public Vector getVector() {
+        return vector;
+    }
+
+    public void render(Pane pane) {}
+
+    public int remove() {
+        return 0;
+    }
+
+    public Image inflate(char type) {
         int normalized = ((int) type) - ((int) 'A');
 
         int row = normalized % 16;
@@ -38,5 +49,9 @@ public abstract class Field extends Observable {
                 (START_OFFSET_ROW + col) * 9,
                 8,
                 8);
+    }
+
+    public Image inflate() {
+        return inflate(this.type);
     }
 }

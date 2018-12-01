@@ -21,12 +21,27 @@ public class Vector {
         this.y = y;
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        if(obj instanceof Vector) {
+            Vector vector = (Vector) obj;
+
+            return vector.getX() == getX() && vector.getY() == getY();
+        }
+
+        return false;
+    }
+
     public Vector add(int x, int y) {
         return new Vector(this.x + x, this.y + y);
     }
 
     public Vector add(Vector vector) {
         return add(vector.getX(), vector.getY());
+    }
+
+    public Vector multiply(int scalar) {
+        return new Vector(getX() * scalar, getY() * scalar);
     }
 
     public static Vector getDirection(int pos) {

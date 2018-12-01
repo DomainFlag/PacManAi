@@ -4,6 +4,7 @@ import controllers.Board;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.Pane;
+import tools.Log;
 
 import java.util.Random;
 
@@ -34,19 +35,24 @@ public class Phantom {
         imageView.setLayoutY(vector.getY() * 8);
     }
 
+    public Vector getVector() {
+        return vector;
+    }
+
     public void update(Board board) {
         Random random = new Random();
 
         Vector nextPos;
         int pos;
         do {
-            pos = random.nextInt(3);
+            pos = random.nextInt(4);
 
             nextPos = vector.add(Vector.getDirection(pos));
         } while(board.checkBoundaries(nextPos) && board.getField(nextPos) instanceof Wall);
 
         vector = nextPos;
-
         setLayout(imageView, vector);
+
+        board.checkCollision(vector);
     }
 }

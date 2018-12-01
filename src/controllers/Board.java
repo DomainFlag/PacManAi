@@ -12,22 +12,37 @@ import java.util.List;
 
 public class Board {
 
+    public interface OnGameOver {
+        void onGameOver();
+    }
+
     public Field[][] fields;
 
     private Vector dimension;
 
-    public static final PacMan pacman = new PacMan(new Vector(2, 6));
-    public static final List<Phantom> phantoms = new ArrayList<>();
+    private int points = 0;
 
-    static {
+    public PacMan pacman = new PacMan(new Vector(2, 6));
+    public List<Phantom> phantoms = new ArrayList<>();
+
+    {
         phantoms.add(new Phantom(new Vector(15, 6)));
         phantoms.add(new Phantom(new Vector(19, 6)));
     }
 
-    public Board(int width, int height) {
+    private OnGameOver onGameOver;
+
+    public Board(OnGameOver onGameOver, int width, int height) {
+        this.onGameOver = onGameOver;
+
         dimension = new Vector(width, height);
         fields = new Field[width][height];
+
         createBoard("./res/maps/map.txt");
+    }
+
+    public Vector getDimension() {
+        return dimension;
     }
 
     public void onUpdateKeyListener(KeyCode key) {
@@ -39,6 +54,10 @@ public class Board {
             phantom.update(this);
     }
 
+    public void onUpdatePacMan() {
+        pacman.updateWobble();
+    }
+
     public void createCharacters(Pane pane) {
         pacman.render(pane);
 
@@ -48,6 +67,26 @@ public class Board {
 
     public Field getField(Vector vector) {
         return fields[vector.getX()][vector.getY()];
+    }
+
+    public void checkCollision(Vector vector) {
+        if(vector.equals(pacman.getVector())) {
+            onGameOver.onGameOver();
+        }
+    }
+
+    public void checkCollisionPhantoms(Vector vector) {
+        for(Phantom phantom : phantoms) {
+            if(vector.equals(phantom.getVector())) {
+                onGameOver.onGameOver();
+            }
+        }
+    }
+
+    public void checkCollisionPoints(Vector vector) {
+        Field field = getField(vector);
+
+        points += field.remove();
     }
 
     public boolean checkBoundaries(Vector vector) {
@@ -77,7 +116,7 @@ public class Board {
                             break;
                         }
                         case 'o' : {
-                            fields[col][row] = new Location(vector, 'o');
+                            fields[col][row] = new Point(vector, 'o');
                             break;
                         }
                         default : {
