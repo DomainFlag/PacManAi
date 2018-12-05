@@ -13,45 +13,43 @@ import javafx.scene.image.WritableImage;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Rectangle;
 import models.Field;
 import models.Vector;
-import tools.Log;
-import views.LinearLayoutView;
-import views.WindowBarView;
+import views.TextView;
 
 public class Game extends ViewScene implements Board.OnGameOver {
 
     private Board board;
 
-    private int points = 0;
-
     public Game(Scenemator scenemator) {
-        super(scenemator);
+        super(scenemator, "Pac-Man");
     }
 
     @Override
     public void onCreateScene(Scene scene, BorderPane pane) {
-        Rectangle rectangle = new Rectangle(Constants.DIM_X, Constants.DIM_Y);
-        rectangle.setFill(Color.BLACK);
-        pane.getChildren().add(rectangle);
+        VBox vBox = new VBox();
+        vBox.setFillWidth(true);
+        vBox.setAlignment(Pos.CENTER);
 
-        WindowBarView windowBarView = new WindowBarView(getScene());
-        pane.setTop(windowBarView);
+        pane.setCenter(vBox);
 
-        LinearLayoutView linearVerticalLayoutView = new LinearLayoutView(
-                LinearLayoutView.LayoutWidth.MATCH_PARENT,
-                LinearLayoutView.LayoutHeight.WRAP_CONTENT,
-                LinearLayoutView.Orientation.VERTICAL,
-                LinearLayoutView.Gravity.CENTER);
-        linearVerticalLayoutView.setLayoutGravity(Pos.CENTER_RIGHT);
+        TextView textBerserkView = new TextView("Berserk Mode", 16, Color.WHITE, 16);
+        textBerserkView.inflate(vBox);
 
-        pane.setCenter(linearVerticalLayoutView.getNode());
+        TextView textScoreView = new TextView("Score", 16, Color.WHITE, 16);
+        textScoreView.inflate(vBox);
 
-        AnchorPane pane1 = new AnchorPane();
-        linearVerticalLayoutView.add(pane1);
+        HBox hGameBox = new HBox();
+        hGameBox.setAlignment(Pos.CENTER);
+        hGameBox.setFillHeight(true);
+        vBox.getChildren().add(hGameBox);
 
-        board = new Board(this, 28, 8);
+        Pane pane1 = new Pane();
+        hGameBox.getChildren().add(pane1);
+
+        board = new Board(this);
+        board.addBerserkView(textBerserkView);
+        board.addObserver(textScoreView);
 
         create(pane1, board);
     }
@@ -72,7 +70,7 @@ public class Game extends ViewScene implements Board.OnGameOver {
     }
 
     public void create(Pane pane, Board board) {
-        Vector dimension = board.getDimension().multiply(8);
+        Vector dimension = board.getDimension().multiply(Constants.TILE_DIMEN);
 
         Canvas canvas = new Canvas(dimension.getX(), dimension.getY());
         GraphicsContext graphicsContext = canvas.getGraphicsContext2D();
@@ -86,21 +84,24 @@ public class Game extends ViewScene implements Board.OnGameOver {
                 field.render(pane);
 
                 graphicsContext.drawImage(image,
-                        vector.getX() * Constants.TILE_DIMEN_WIDTH,
-                        vector.getY() * Constants.TILE_DIMEN_HEIGHT,
-                        Constants.TILE_DIMEN_WIDTH,
-                        Constants.TILE_DIMEN_HEIGHT);
+                        vector.getX() * Constants.TILE_DIMEN,
+                        vector.getY() * Constants.TILE_DIMEN,
+                        Constants.TILE_DIMEN,
+                        Constants.TILE_DIMEN);
             }
         }
 
         WritableImage writableImage = canvas.snapshot(null, null);
-        pane.getChildren().set(0, new ImageView(writableImage));
+        pane.getChildren().add(0, new ImageView(writableImage));
 
         board.createCharacters(pane);
     }
 
     @Override
-    public void onGameOver() {
-        onBackPressed();
+    public void onGameOver(String message) {
+        ViewScene viewScene = onBackPressed();
+        if(viewScene instanceof Menu) {
+            ((Menu) viewScene).setState(message);
+        }
     }
 }

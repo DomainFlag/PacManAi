@@ -1,5 +1,6 @@
 package models;
 
+import core.Constants;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.Pane;
@@ -11,11 +12,16 @@ public class Point extends Field {
     private Pane pane;
 
     private char floatedType;
+    private int value;
+
+    public boolean powerPoint;
 
     public Point(Vector vector, char type) {
         super(vector, 'm');
 
         floatedType = type;
+        value = (int) Math.pow(10, floatedType - 'n' + 1);
+        powerPoint = value > 10;
     }
 
     @Override
@@ -23,25 +29,21 @@ public class Point extends Field {
         this.pane = pane;
 
         imageView = new ImageView(inflate(floatedType));
-        imageView.setFitWidth(8);
-        imageView.setFitHeight(8);
+        imageView.setFitWidth(Constants.TILE_DIMEN);
+        imageView.setFitHeight(Constants.TILE_DIMEN);
 
 
         setLayout(imageView, getVector());
         pane.getChildren().add(imageView);
     }
 
-    @Override
-    public int remove() {
-        if(pane.getChildren().remove(imageView)) {
-            return 15;
-        }
+    public void disable() {
+        pane.getChildren().remove(imageView);
 
-        return 0;
+        value = 0;
     }
 
-    public void setLayout(ImageView imageView, Vector vector) {
-        imageView.setLayoutX(vector.getX() * 8);
-        imageView.setLayoutY(vector.getY() * 8);
+    public int getValue() {
+        return value;
     }
 }

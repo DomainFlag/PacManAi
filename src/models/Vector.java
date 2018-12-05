@@ -13,13 +13,15 @@ public class Vector {
         directions.put(3, new Vector(-1, 0));
     }
 
-    private int x;
-    private int y;
+    public int x;
+    public int y;
 
     public Vector(int x, int y) {
         this.x = x;
         this.y = y;
     }
+
+    public Vector() { }
 
     @Override
     public boolean equals(Object obj) {
@@ -32,6 +34,11 @@ public class Vector {
         return false;
     }
 
+    @Override
+    public String toString() {
+        return "Vector(" + getX() + ", " + getY() + ")";
+    }
+
     public Vector add(int x, int y) {
         return new Vector(this.x + x, this.y + y);
     }
@@ -40,12 +47,31 @@ public class Vector {
         return add(vector.getX(), vector.getY());
     }
 
+    public Vector subtract(Vector vector) {
+        return new Vector(this.x - vector.getX(), this.y  + vector.getY());
+    }
+
+    public Vector abs() {
+        this.x = Math.abs(x);
+        this.y = Math.abs(y);
+
+        return this;
+    }
+
     public Vector multiply(int scalar) {
         return new Vector(getX() * scalar, getY() * scalar);
     }
 
     public static Vector getDirection(int pos) {
         return directions.get(pos);
+    }
+
+    public boolean isGreater(Vector vector) {
+        return getX() >= vector.getX() && getY() >= vector.getY();
+    }
+
+    public int getMax() {
+        return Math.max(getX(), getY());
     }
 
     public int getX() {

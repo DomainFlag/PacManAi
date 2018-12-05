@@ -17,4 +17,8 @@ public class Log {
     public static void v(double message) {
         System.out.println(message);
     }
+
+    public static void v(boolean message) {
+        System.out.println(message);
+    }
 }

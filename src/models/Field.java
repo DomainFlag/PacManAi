@@ -1,6 +1,8 @@
 package models;
 
+import core.Constants;
 import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.image.WritableImage;
 import javafx.scene.layout.Pane;
 
@@ -15,7 +17,7 @@ public abstract class Field extends Observable {
     private Vector vector;
 
     private static final int START_OFFSET_COL = 28;
-    private static final int START_OFFSET_ROW = 3;
+    private static final int START_OFFSET_ROW = 6;
 
     private char type;
 
@@ -34,11 +36,12 @@ public abstract class Field extends Observable {
 
     public void render(Pane pane) {}
 
-    public int remove() {
-        return 0;
+    public void setLayout(ImageView imageView, Vector vector) {
+        imageView.setLayoutX(vector.getX() * Constants.TILE_DIMEN);
+        imageView.setLayoutY(vector.getY() * Constants.TILE_DIMEN);
     }
 
-    public Image inflate(char type) {
+    public static Image inflate(char type) {
         int normalized = ((int) type) - ((int) 'A');
 
         int row = normalized % 16;
@@ -52,6 +55,6 @@ public abstract class Field extends Observable {
     }
 
     public Image inflate() {
-        return inflate(this.type);
+        return Field.inflate(this.type);
     }
 }

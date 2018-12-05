@@ -1,49 +1,80 @@
 package scenes;
 
-import core.Constants;
 import core.Scenemator;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.*;
+import javafx.scene.media.Media;
+import javafx.scene.media.MediaPlayer;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Rectangle;
-import views.LinearLayoutView;
 import views.TextView;
-import views.WindowBarView;
+
+import java.io.File;
 
 public class Menu extends ViewScene {
 
+    private TextView textStateView;
+
     public Menu(Scenemator scenemator) {
-        super(scenemator);
+        super(scenemator, "Menu");
     }
 
     @Override
     public void onCreateScene(Scene scene, BorderPane pane) {
-        Rectangle rectangle = new Rectangle(Constants.DIM_X, Constants.DIM_Y);
-        rectangle.setFill(Color.BLACK);
-        pane.getChildren().add(rectangle);
+        Media media = new Media(new File("res/raw/pac_man_intro.mp3").toURI().toString());
+        MediaPlayer mediaPlayer = new MediaPlayer(media);
+        mediaPlayer.play();
 
-        WindowBarView windowBarView = new WindowBarView(getScene());
-        pane.setTop(windowBarView);
+        VBox vBox = new VBox();
+        vBox.setFillWidth(true);
+        vBox.setSpacing(16);
+        vBox.setAlignment(Pos.CENTER);
 
-        LinearLayoutView linearVerticalLayoutView = new LinearLayoutView(
-                LinearLayoutView.LayoutWidth.MATCH_PARENT,
-                LinearLayoutView.LayoutHeight.WRAP_CONTENT,
-                LinearLayoutView.Orientation.VERTICAL,
-                LinearLayoutView.Gravity.CENTER);
-        linearVerticalLayoutView.setLayoutGravity(Pos.CENTER);
+        pane.setCenter(vBox);
 
-        pane.setCenter(linearVerticalLayoutView.getNode());
+        textStateView = new TextView("None", 36, Color.WHITE, 16);
+        textStateView.setVisible(false);
+        textStateView.inflate(vBox);
 
-        TextView textView = new TextView("START", 16);
-        textView.setOnMouseClicked(event -> {
+        TextView textStartView = new TextView("START", 36, Color.LIGHTGRAY, 16);
+        textStartView.setOnMouseClicked(event -> {
             if(event.getButton().equals(MouseButton.PRIMARY)) {
                 startGame();
             }
         });
-        linearVerticalLayoutView.add(textView);
+        textStartView.setOnHover(Color.WHITE);
+        textStartView.inflate(vBox);
+
+        TextView textBuilderView = new TextView("Builder",16, Color.LIGHTGRAY, 4);
+        textBuilderView.setOnMouseClicked(event -> {
+            if(event.getButton().equals(MouseButton.PRIMARY)) {
+                Creator creator = new Creator(getScenemator());
+                addScene(creator);
+            }
+        });
+        textBuilderView.setOnHover(Color.WHITE);
+        textBuilderView.inflate(vBox);
+
+        TextView textCreditsView = new TextView("Credits",16, Color.LIGHTGRAY, 4);
+        textCreditsView.setOnMouseClicked(event -> {
+            if(event.getButton().equals(MouseButton.PRIMARY)) {
+                Creator creator = new Creator(getScenemator());
+                addScene(creator);
+            }
+        });
+        textCreditsView.setOnHover(Color.WHITE);
+        textCreditsView.inflate(vBox);
+    }
+
+    public void setState(String message) {
+        textStateView.setText(message);
+        textStateView.setVisible(true);
+
+        registerTimeOutListener(() -> {
+            textStateView.setVisible(false);
+        }, 3);
     }
 
     private void startGame() {

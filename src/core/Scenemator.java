@@ -29,7 +29,7 @@ public class Scenemator {
         scenes.add(viewScene);
     }
 
-    public void onBack() {
+    public ViewScene onBack() {
         if(scenes.size() > 1) {
             ViewScene currentScene = scenes.get(scenes.size() - 1);
             currentScene.pauseScene();
@@ -38,9 +38,17 @@ public class Scenemator {
             previousScene.showScene(primaryStage);
 
             scenes.remove(currentScene);
+
+            return previousScene;
         } else {
             primaryStage.close();
         }
+
+        return null;
+    }
+
+    public Stage getPrimaryStage() {
+        return primaryStage;
     }
 
     public void start() {
