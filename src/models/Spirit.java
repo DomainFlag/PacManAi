@@ -26,8 +26,8 @@ public abstract class Spirit {
         this.root = pane;
 
         imageView = new ImageView(images.get(0));
-        imageView.setFitWidth(Constants.TILE_DIMEN);
-        imageView.setFitHeight(Constants.TILE_DIMEN);
+        imageView.setFitWidth(Constants.TILE_DIMEN_DEFAULT);
+        imageView.setFitHeight(Constants.TILE_DIMEN_DEFAULT);
 
         updateLayout();
 
@@ -40,8 +40,8 @@ public abstract class Spirit {
     }
 
     public void updateLayout() {
-        imageView.setLayoutX(vector.getX() * Constants.TILE_DIMEN);
-        imageView.setLayoutY(vector.getY() * Constants.TILE_DIMEN);
+        imageView.setLayoutX(vector.getX() * Constants.TILE_DIMEN_DEFAULT);
+        imageView.setLayoutY(vector.getY() * Constants.TILE_DIMEN_DEFAULT);
     }
 
     public Vector getVector() {

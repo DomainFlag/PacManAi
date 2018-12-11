@@ -21,12 +21,16 @@ public class Game extends ViewScene implements Board.OnGameOver {
 
     private Board board;
 
+    private static final int GAME_ANIMATION = 150000000;
+
     public Game(Scenemator scenemator) {
         super(scenemator, "Pac-Man");
     }
 
     @Override
     public void onCreateScene(Scene scene, BorderPane pane) {
+        setAnimationTime(GAME_ANIMATION);
+
         VBox vBox = new VBox();
         vBox.setFillWidth(true);
         vBox.setAlignment(Pos.CENTER);
@@ -70,7 +74,7 @@ public class Game extends ViewScene implements Board.OnGameOver {
     }
 
     public void create(Pane pane, Board board) {
-        Vector dimension = board.getDimension().multiply(Constants.TILE_DIMEN);
+        Vector dimension = board.getDimension().multiply(Constants.TILE_DIMEN_DEFAULT);
 
         Canvas canvas = new Canvas(dimension.getX(), dimension.getY());
         GraphicsContext graphicsContext = canvas.getGraphicsContext2D();
@@ -84,10 +88,10 @@ public class Game extends ViewScene implements Board.OnGameOver {
                 field.render(pane);
 
                 graphicsContext.drawImage(image,
-                        vector.getX() * Constants.TILE_DIMEN,
-                        vector.getY() * Constants.TILE_DIMEN,
-                        Constants.TILE_DIMEN,
-                        Constants.TILE_DIMEN);
+                        vector.getX() * Constants.TILE_DIMEN_DEFAULT,
+                        vector.getY() * Constants.TILE_DIMEN_DEFAULT,
+                        Constants.TILE_DIMEN_DEFAULT,
+                        Constants.TILE_DIMEN_DEFAULT);
             }
         }
 

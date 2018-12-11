@@ -119,8 +119,8 @@ public abstract class ViewScene {
         animationTimer.start();
     }
 
-    public void registerTimeOutListener(TimeOutListener timeOutListener, long durationSeconds) {
-        timeOutListeners.add(new TimeOut(timeOutListener, durationSeconds));
+    public void registerTimeOutListener(TimeOutListener timeOutListener, long duration) {
+        timeOutListeners.add(new TimeOut(timeOutListener, duration));
     }
 
     private void setOnKeySceneListener(Scene scene) {
@@ -152,7 +152,7 @@ public abstract class ViewScene {
 
         private TimeOut(TimeOutListener timeOutListener, long duration) {
             this.timeOutListener = timeOutListener;
-            this.duration = duration * 1000000000;
+            this.duration = duration;
         }
 
         private boolean resolve(long timestamp) {

@@ -1,5 +1,6 @@
 package models;
 
+import com.sun.istack.internal.Nullable;
 import core.Constants;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -24,17 +25,23 @@ public class Point extends Field {
         powerPoint = value > 10;
     }
 
+    public char getFloatedType() {
+        return floatedType;
+    }
+
     @Override
-    public void render(Pane pane) {
-        this.pane = pane;
+    public void render(@Nullable Pane pane) {
+        if(pane != null) {
+            this.pane = pane;
 
-        imageView = new ImageView(inflate(floatedType));
-        imageView.setFitWidth(Constants.TILE_DIMEN);
-        imageView.setFitHeight(Constants.TILE_DIMEN);
+            imageView = new ImageView(inflate(floatedType));
+            imageView.setFitWidth(Constants.TILE_DIMEN_DEFAULT);
+            imageView.setFitHeight(Constants.TILE_DIMEN_DEFAULT);
 
 
-        setLayout(imageView, getVector());
-        pane.getChildren().add(imageView);
+            setLayout(imageView, getVector());
+            pane.getChildren().add(imageView);
+        }
     }
 
     public void disable() {

@@ -17,6 +17,7 @@ public class PacMan extends Spirit {
     }
 
     private static final List<Image> images = new ArrayList<>();
+    private Vector direction = new Vector(1, 0);
     private int imagePosition = 0;
 
     static {
@@ -29,7 +30,7 @@ public class PacMan extends Spirit {
         super(vector, images);
     }
 
-    public void updatePosition(Board board, KeyCode keyCode) {
+    public void updatePosition(KeyCode keyCode) {
         int pos;
         switch(keyCode) {
             case UP : {
@@ -53,7 +54,12 @@ public class PacMan extends Spirit {
             }
         }
 
-        Vector position = getVector().add(Vector.getDirection(pos));
+        direction = Vector.getDirection(pos);
+    }
+
+    @Override
+    public void update(Board board) {
+        Vector position = getVector().add(direction);
         if(!(board.getField(position) instanceof Wall)) {
             Vector currentPosition = board.resolveBoundaries(position);
 
@@ -63,10 +69,8 @@ public class PacMan extends Spirit {
             setVector(currentPosition);
             updateLayout();
         }
-    }
 
-    @Override
-    public void update(Board board) {
+
         imagePosition = (imagePosition + 1) % images.size();
 
         getImageView().setImage(images.get(imagePosition));

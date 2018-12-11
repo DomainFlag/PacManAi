@@ -1,9 +1,13 @@
 package scenes;
 
+import controllers.Playground;
+import controllers.Tools;
 import core.Scenemator;
+import javafx.collections.FXCollections;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
+import javafx.scene.control.ChoiceBox;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
@@ -11,6 +15,7 @@ import javafx.scene.input.MouseButton;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import models.Field;
+import models.Point;
 import models.Vector;
 import tools.Log;
 import views.EditTextView;
@@ -19,8 +24,6 @@ import views.TextView;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Observable;
-import java.util.Observer;
 
 public class Creator extends ViewScene {
 
@@ -80,9 +83,15 @@ public class Creator extends ViewScene {
 
 
     public void createSettings(Pane pane, CreatorBoard creatorBoard) {
+
+        List<File> files = Tools.generateMaps();
+        List<String> filesDecoded = Tools.generateMapsDecoded(files);
+
+        // Adjusting the board settings label
         TextView textLabelView = new TextView("Board settings:", 16, Color.WHITE, 0);
         textLabelView.inflate(pane);
 
+        // Adjusting the width
         EditTextView editTextWidthView = new EditTextView("16", "value...", "Board width:");
         editTextWidthView.onAttachEditTextChangeListener(value -> {
             if(!value.isEmpty()) {
@@ -93,6 +102,7 @@ public class Creator extends ViewScene {
         });
         editTextWidthView.inflate(pane);
 
+        // Adjusting the height
         EditTextView editTextHeightView = new EditTextView("12", "value...", "Board height");
         editTextHeightView.onAttachEditTextChangeListener(value -> {
             if(!value.isEmpty()) {
@@ -103,12 +113,56 @@ public class Creator extends ViewScene {
         });
         editTextHeightView.inflate(pane);
 
-        TextView textSaveView = new TextView("Save the map", 16, Color.LIGHTGRAY,
+        // Filling up everything with points
+        TextView textPointsView = new TextView("Fill blank with points", 16, Color.LIGHTGRAY,
                 new Insets(16, 0, 16, 0));
-        textSaveView.setOnMouseClicked(event -> {
-            creatorBoard.saveBoard("map_2");
+        textPointsView.setOnMouseClicked(event -> {
+            creatorBoard.fillPoints();
         });
-        textSaveView.setOnHover(Color.GREEN);
+        textPointsView.setOnHover(Color.WHITE);
+        textPointsView.inflate(pane);
+
+        // Reusing the old maps
+        TextView textMapsView = new TextView("Your maps", 16, Color.LIGHTGRAY,
+                new Insets(16, 0, 16, 0));
+        textMapsView.inflate(pane);
+
+        ChoiceBox<String> choiceBox = new ChoiceBox<>();
+        choiceBox.setBackground(Background.EMPTY);
+
+        choiceBox.getSelectionModel().selectedIndexProperty().addListener((observable, oldValue, newValue) -> {
+            int optionItemSelected = newValue.intValue() - 1;
+            if(optionItemSelected >= 0) {
+                File file = files.get(optionItemSelected);
+
+                Playground playground = new Playground();
+                playground.generateFields(file);
+
+                editTextHeightView.setText(String.valueOf(playground.getDimension().getX()));
+                editTextWidthView.setText(String.valueOf(playground.getDimension().getY()));
+
+                creatorBoard.resolvePlayground(playground);
+            }
+        });
+
+        if(!files.isEmpty()) {
+            filesDecoded.add(0, "New");
+
+            choiceBox.setItems(FXCollections.observableArrayList(filesDecoded));
+            choiceBox.getSelectionModel().selectFirst();
+
+            pane.getChildren().add(choiceBox);
+        }
+
+        // Saving current map
+        TextView textSaveView = new TextView("Save the map", 16, Color.LIGHTGRAY,
+                new Insets(48, 0, 16, 0));
+
+        textSaveView.setOnMouseClicked(event -> {
+            creatorBoard.saveBoard("map_" + files.size());
+        });
+
+        textSaveView.setOnHover(Color.WHITE);
         textSaveView.inflate(pane);
     }
 
@@ -229,6 +283,42 @@ public class Creator extends ViewScene {
             return piece;
         }
 
+        private void resolvePlayground(Playground playground) {
+            adjust(playground.getDimension());
+
+            for(int i = 0; i < dimension.getX(); i++) {
+                for(int g = 0; g < dimension.getY(); g++) {
+                    Field field = playground.getField(i, g);
+                    Piece piece = board.get(i).get(g);
+
+                    Image image;
+                    if(field instanceof Point)
+                        image = Field.inflate(((Point) field).getFloatedType());
+                    else image = field.inflate();
+
+                    piece.getImageView().setImage(image);
+                    piece.setType(field.getType());
+                }
+            }
+        }
+
+        private void fillPoints() {
+            Image image = Field.inflate('n');
+
+            for(int g = 0; g < dimension.getX(); g++) {
+                List<Piece> boardCol = board.get(g);
+
+                for(int h = 0; h < dimension.getY(); h++) {
+                    Piece piece = boardCol.get(h);
+
+                    if(piece.getType() == 'm') {
+                        piece.setType('n');
+                        piece.getImageView().setImage(image);
+                    }
+                }
+            }
+        }
+
         private void inflateBoard(Pane pane) {
             VBox.setMargin(pane, new Insets(16));
             VBox.setMargin(root, new Insets(16));
@@ -249,6 +339,10 @@ public class Creator extends ViewScene {
 
                 board.add(boardCol);
             }
+        }
+
+        private void adjustDimension(Vector dimension) {
+            adjust(dimension);
         }
 
         private void adjustWidth(int width) {

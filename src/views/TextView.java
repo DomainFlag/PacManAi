@@ -1,8 +1,11 @@
 package views;
 
+import interfaces.Inflater;
+import interfaces.ItemSelectable;
 import javafx.geometry.Insets;
 import javafx.scene.Cursor;
 import javafx.scene.Node;
+import javafx.scene.effect.DropShadow;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
@@ -14,14 +17,17 @@ import java.beans.EventHandler;
 import java.util.Observable;
 import java.util.Observer;
 
-public class TextView extends Text implements Observer {
+public class TextView extends Text implements Observer, Inflater {
 
     private StackPane root;
+    private Paint defaultPaint;
 
     public TextView(String text, int textSize, Color color, Insets padding) {
         super(text);
 
-        setFill(color);
+        defaultPaint = color;
+
+        setFill(defaultPaint);
         setFont(getFont(textSize));
 
         root = new StackPane();
@@ -42,7 +48,6 @@ public class TextView extends Text implements Observer {
     }
 
     public void setOnHover(Color color) {
-        Paint defaultPaint = getFill();
         Font defaultFont = getFont();
 
         setOnMouseEntered(event -> {
@@ -56,6 +61,13 @@ public class TextView extends Text implements Observer {
         });
     }
 
+    public void setDefaultPaint(Paint defaultPaint) {
+        this.defaultPaint = defaultPaint;
+
+        setFill(defaultPaint);
+    }
+
+    @Override
     public void inflate(Pane pane) {
         pane.getChildren().add(root);
     }

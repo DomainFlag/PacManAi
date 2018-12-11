@@ -6,5 +6,5 @@ public class Constants {
     public static final int DIM_X = 800;
     public static final int DIM_Y = 800;
 
-    public static final int TILE_DIMEN = 16;
+    public static final int TILE_DIMEN_DEFAULT = 16;
 }

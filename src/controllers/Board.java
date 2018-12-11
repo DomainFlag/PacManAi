@@ -6,8 +6,6 @@ import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import models.*;
 import scenes.Game;
-import scenes.ViewScene;
-import tools.Log;
 import views.TextView;
 
 import java.io.*;
@@ -31,7 +29,7 @@ public class Board extends Observable {
 
     private TextView berserkView = null;
 
-    private int total = 0;
+    public int total = 0;
     private int points = 0;
     private boolean berserk = false;
 
@@ -59,21 +57,28 @@ public class Board extends Observable {
         return dimension;
     }
 
+    public void setDimension(Vector dimension) {
+        this.dimension = dimension;
+    }
+
     public void onUpdateKeyListener(KeyCode key) {
-        pacman.updatePosition(this, key);
+        pacman.updatePosition(key);
 
         resolveGameState();
     }
 
     public void onUpdatePhantoms() {
-        for(Phantom phantom : phantoms)
+        for(Phantom phantom : phantoms) {
             phantom.updateSpirit(this);
+
+            phantom.findPath(this, pacman);
+        }
 
         resolveGameState();
     }
 
     public void onUpdatePacMan() {
-        pacman.update(null);
+        pacman.update(this);
     }
 
     public void createCharacters(Pane pane) {
@@ -81,8 +86,6 @@ public class Board extends Observable {
 
         for(Phantom phantom : phantoms)
             phantom.render(pane);
-
-//        phantoms.get(0).findPath(this, pacman);
     }
 
     public Field getField(Vector vector) {
@@ -174,6 +177,14 @@ public class Board extends Observable {
 
     public List<Segment> getGraph() {
         return graph;
+    }
+
+    public int getTotal() {
+        return total;
+    }
+
+    public void setTotal(int total) {
+        this.total = total;
     }
 
     public void resolveGraph(Vector start, int orientation) {

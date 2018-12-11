@@ -2,6 +2,10 @@ package tools;
 
 public class Log {
 
+    public static void v(Object object) {
+        System.out.println(object);
+    }
+
     public static void v(String string) {
         System.out.println(string);
     }

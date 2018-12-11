@@ -1,21 +1,11 @@
 package views;
 
-import javafx.event.EventHandler;
-import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.input.MouseButton;
-import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.Region;
-import javafx.scene.layout.StackPane;
+import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
-import javafx.scene.text.Font;
-import javafx.scene.text.Text;
 import javafx.stage.Stage;
-import models.Vector;
-
-import java.awt.*;
+import tools.Log;
 
 public class WindowBarView extends HBox {
 
@@ -27,29 +17,32 @@ public class WindowBarView extends HBox {
         HBox.setHgrow(region, Priority.ALWAYS);
         getChildren().add(region);
 
-        IconView iconMinimizeView = new IconView(
+        DrawingView iconMinimizeView = new DrawingView(
                 "file:res/icons/window-minimize.png",
                 12,
                 12,
-                12,
-                event -> {
-                    if(event.getButton().equals(MouseButton.PRIMARY)) {
-                        ( (Stage) scene.getWindow()).setIconified(true);
-                    }
-                });
+                12);
+        iconMinimizeView.setOnMouseClickListener(event -> {
+            if(event.getButton().equals(MouseButton.PRIMARY)) {
+                Log.v("Done");
+                ( (Stage) scene.getWindow()).setIconified(true);
+            }
+        });
+
         iconMinimizeView.inflate(this);
 
-        IconView iconCloseView = new IconView(
+        DrawingView iconCloseView = new DrawingView(
                 "file:res/icons/window-close.png",
                 12,
                 12,
-                12,
-                event -> {
-                    if(event.getButton().equals(MouseButton.PRIMARY)) {
-                        Stage stage = (Stage) scene.getWindow();
-                        stage.close();
-                    }
-                });
+                12);
+        iconCloseView.setOnMouseClickListener(event -> {
+            if(event.getButton().equals(MouseButton.PRIMARY)) {
+                Stage stage = (Stage) scene.getWindow();
+                stage.close();
+            }
+        });
+
         iconCloseView.inflate(this);
     }
 

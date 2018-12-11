@@ -15,8 +15,7 @@ public class Segment {
     private List<Segment> segments = new ArrayList<>();
     private Vector start;
     private Vector end;
-    private int orientation;
-    private int cost;
+    public int orientation;
 
     public Segment(Vector start, Vector end) {
         this.start = start;
@@ -33,10 +32,6 @@ public class Segment {
 
     public void add(Segment segment) {
         segments.add(segment);
-    }
-
-    public int getCost() {
-        return cost;
     }
 
     public Vector getEnd() {

@@ -1,5 +1,6 @@
 package views;
 
+import interfaces.Inflater;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.geometry.Insets;
@@ -10,7 +11,10 @@ import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 
-public class EditTextView extends TextField {
+import java.util.Observable;
+import java.util.Observer;
+
+public class EditTextView extends TextField implements Inflater, Observer {
 
     public interface OnEditTextChangeListener {
         void onEditTextChangeListener(String value);
@@ -75,9 +79,17 @@ public class EditTextView extends TextField {
         label.setPadding(new Insets(8, 0, 8, 0));
     }
 
-    public void inflate(Pane node) {
-        node.getChildren().add(label);
-        node.getChildren().add(this);
-        node.getChildren().add(error);
+    @Override
+    public void inflate(Pane pane) {
+        pane.getChildren().add(label);
+        pane.getChildren().add(this);
+        pane.getChildren().add(error);
+    }
+
+    @Override
+    public void update(Observable o, Object arg) {
+        if(arg instanceof String) {
+            setText((String) arg);
+        }
     }
 }

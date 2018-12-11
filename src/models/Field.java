@@ -37,8 +37,8 @@ public abstract class Field extends Observable {
     public void render(Pane pane) {}
 
     public void setLayout(ImageView imageView, Vector vector) {
-        imageView.setLayoutX(vector.getX() * Constants.TILE_DIMEN);
-        imageView.setLayoutY(vector.getY() * Constants.TILE_DIMEN);
+        imageView.setLayoutX(vector.getX() * Constants.TILE_DIMEN_DEFAULT);
+        imageView.setLayoutY(vector.getY() * Constants.TILE_DIMEN_DEFAULT);
     }
 
     public static Image inflate(char type) {
