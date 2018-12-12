@@ -159,7 +159,7 @@ public class Creator extends ViewScene {
                 new Insets(48, 0, 16, 0));
 
         textSaveView.setOnMouseClicked(event -> {
-            creatorBoard.saveBoard("map_" + files.size());
+            creatorBoard.saveBoard("map_" + (files.size() + 1));
         });
 
         textSaveView.setOnHover(Color.WHITE);

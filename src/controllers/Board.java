@@ -6,30 +6,30 @@ import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import models.*;
 import scenes.Game;
+import tools.Log;
 import views.TextView;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Observable;
 
 public class Board extends Observable {
 
-    private static final int BERSERK_TIME = 10;
+    // 10 seconds
+    private static final long BERSERK_TIME = 10000000000L;
 
     public interface OnGameOver {
         void onGameOver(String message);
     }
 
-    public Field[][] fields;
-
     private Game game;
-    private Vector dimension;
-    private List<Segment> graph = new ArrayList<>();;
+    private Playground playground;
+    private HashMap<String, Segment> graph = new HashMap<>();
 
     private TextView berserkView = null;
 
-    public int total = 0;
     private int points = 0;
     private boolean berserk = false;
 
@@ -45,20 +45,16 @@ public class Board extends Observable {
 
     private OnGameOver onGameOver;
 
-    public Board(Game game) {
+    public Board(Game game, Playground playground) {
+        this.playground = playground;
         this.onGameOver = game;
         this.game = game;
 
-        createBoard("./res/maps/map_1.txt");
         resolveGraph(pacman.getVector(), Segment.HORIZONTAL);
     }
 
-    public Vector getDimension() {
-        return dimension;
-    }
-
-    public void setDimension(Vector dimension) {
-        this.dimension = dimension;
+    public Playground getPlayground() {
+        return playground;
     }
 
     public void onUpdateKeyListener(KeyCode key) {
@@ -70,8 +66,7 @@ public class Board extends Observable {
     public void onUpdatePhantoms() {
         for(Phantom phantom : phantoms) {
             phantom.updateSpirit(this);
-
-            phantom.findPath(this, pacman);
+            phantom.findShortestPath(graph, pacman.getVector());
         }
 
         resolveGameState();
@@ -88,17 +83,10 @@ public class Board extends Observable {
             phantom.render(pane);
     }
 
-    public Field getField(Vector vector) {
-        int x = vector.getX() < 0 ? dimension.getX() + vector.getX() : vector.getX() % dimension.getX();
-        int y = vector.getY() < 0 ? dimension.getY() + vector.getY() : vector.getY() % dimension.getY();
-
-        return fields[x][y];
-    }
-
     private void resolveScore(int value) {
         if(value >= 0) {
             points += value;
-            total--;
+            playground.setTotal(playground.getTotal() - 1);
 
             setChanged();
             notifyObservers(String.valueOf(points));
@@ -127,13 +115,13 @@ public class Board extends Observable {
     }
 
     public void resolveGameState() {
-        if(total == 0 || Phantom.resolvePhantoms(phantoms)) {
+        if(playground.getTotal() == 0 || Phantom.resolvePhantoms(phantoms)) {
             onGameOver.onGameOver("You won, Congrats");
         }
     }
 
     public void checkCollisionPoints(Vector vector) {
-        Field field = getField(vector);
+        Field field = playground.getField(vector);
         if(field instanceof Point) {
             Point point = (Point) field;
             int value = point.getValue();
@@ -156,90 +144,19 @@ public class Board extends Observable {
         }
     }
 
-    public Vector resolveBoundaries(Vector vector) {
-        int x = vector.getX() < 0 ? dimension.getX() - 1 : vector.getX() % dimension.getX();
-        int y = vector.getY() < 0 ? dimension.getY() - 1: vector.getY() % dimension.getY();
-
-        return new Vector(x, y);
-    }
-
     public PacMan getPacman() {
         return pacman;
-    }
-
-    public Field[][] getFields() {
-        return fields;
     }
 
     public List<Phantom> getPhantoms() {
         return phantoms;
     }
 
-    public List<Segment> getGraph() {
+    public HashMap<String, Segment> getGraph() {
         return graph;
     }
 
-    public int getTotal() {
-        return total;
-    }
-
-    public void setTotal(int total) {
-        this.total = total;
-    }
-
     public void resolveGraph(Vector start, int orientation) {
-        Segment.resolvePosition(graph, this, start, orientation);
-    }
-
-    public void createBoard(String path) {
-        File file = new File(path);
-
-        try {
-            FileInputStream fileInputStream = new FileInputStream(file);
-            InputStreamReader inputStreamReader = new InputStreamReader(fileInputStream);
-            BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
-
-            String line = bufferedReader.readLine();
-            if(line == null)
-                return;
-
-            String[] dimensions = line.split(" ");
-            int width = Integer.valueOf(dimensions[1]);
-            int height = Integer.valueOf(dimensions[0]);
-
-            dimension = new Vector(width, height);
-            fields = new Field[width][height];
-
-            int row = 0;
-            while((line = bufferedReader.readLine()) != null) {
-                for(int col = 0; col < line.length(); col++) {
-                    char type = line.charAt(col);
-
-                    Vector vector = new Vector(row, col);
-
-                    switch(type) {
-                        case 'm' : {
-                            fields[row][col] = new Location(vector, 'm');
-                            break;
-                        }
-                        case 'n' : {}
-                        case 'o' : {}
-                        case 'p' : {
-                            total++;
-
-                            fields[row][col] = new Point(vector, type);
-                            break;
-                        }
-                        default : {
-                            fields[row][col] = new Wall(vector, type);
-                        }
-                    }
-                }
-
-                row++;
-            }
-        } catch(IOException e) {
-            System.out.println(e.toString());
-        }
+        Segment parent = Segment.resolvePosition(graph, playground, start, orientation);
     }
 }

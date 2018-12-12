@@ -2,18 +2,21 @@ package views;
 
 import interfaces.Inflater;
 import interfaces.ItemSelectable;
+import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.scene.Cursor;
 import javafx.scene.Node;
 import javafx.scene.effect.DropShadow;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 import javafx.scene.shape.StrokeType;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
+import javafx.scene.transform.Scale;
+import tools.Log;
 
-import java.beans.EventHandler;
 import java.util.Observable;
 import java.util.Observer;
 
@@ -47,18 +50,28 @@ public class TextView extends Text implements Observer, Inflater {
         return getFont((int) size);
     }
 
-    public void setOnHover(Color color) {
-        Font defaultFont = getFont();
+    public void setOnHover(Color color, double scaleFactor) {
+        Scale scale = new Scale();
+        scale.setPivotX(getBoundsInLocal().getWidth() / 2.0f);
+        scale.setPivotY(0);
+        scale.setX(scaleFactor);
+        scale.setY(scaleFactor);
 
-        setOnMouseEntered(event -> {
+        root.setOnMouseEntered(event -> {
+            getTransforms().add(scale);
+
             setFill(color);
-            setFont(getFont(defaultFont.getSize() + 4));
         });
 
-        setOnMouseExited(event -> {
+        root.setOnMouseExited(event -> {
+            getTransforms().remove(scale);
+
             setFill(defaultPaint);
-            setFont(defaultFont);
         });
+    }
+
+    public void setOnHover(Color color) {
+        setOnHover(color, 1.25d);
     }
 
     public void setDefaultPaint(Paint defaultPaint) {

@@ -75,6 +75,10 @@ public class DrawingView extends ImageView implements Inflater, Observer {
         pane.getChildren().add(root);
     }
 
+    public void inflate(Pane pane, int index) {
+        pane.getChildren().add(index, root);
+    }
+
     @Override
     public void update(Observable o, Object arg) {
         if(arg instanceof Image)

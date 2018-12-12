@@ -1,8 +1,11 @@
 package models;
 
+import com.sun.deploy.util.OrderedHashSet;
 import controllers.Board;
 import core.Segment;
 import javafx.scene.image.Image;
+import tools.Log;
+
 import java.util.*;
 
 public class Phantom extends Spirit {
@@ -18,8 +21,10 @@ public class Phantom extends Spirit {
 
     private static final List<Image> images = new ArrayList<>();
 
-    private int min = Integer.MAX_VALUE;
-    private List<Segment> minS = new ArrayList<>();
+    private double wobblePivot = 0.0f;
+
+    private List<Segment> shortestPath = new ArrayList<>();
+    private int shortestPathCount = Integer.MAX_VALUE;
 
     static {
         for(String path : paths) {
@@ -53,63 +58,60 @@ public class Phantom extends Spirit {
         return true;
     }
 
-    public void min(List<Segment> segments) {
-        if(min > segments.size()) {
-            min = segments.size();
+    /**
+     * Find the smallest path
+     * @param graph our graph of all the connected segments on the map
+     * @param target target
+     */
+    public void findShortestPath(HashMap<String, Segment> graph, Vector target) {
+        shortestPathCount = Integer.MAX_VALUE;
 
-            minS.clear();
-            minS.addAll(segments);
-        }
-    }
-
-    public void findPath(Board board, PacMan pacMan) {
-        min = Integer.MAX_VALUE;
-
-        List<Segment> graph = board.getGraph();
-
-        for(Segment segment : graph) {
+        for(Segment segment : graph.values()) {
             if(segment.isThere(getVector())) {
-                List<Segment> paths = new ArrayList<>();
-                paths.add(segment);
+                LinkedHashMap<String, Segment> paths = new LinkedHashMap<>();
+                paths.put(segment.encodeSegment(), segment);
 
-                getPath(paths, pacMan.getVector());
+                getPath(paths, segment, target);
 
                 break;
             }
         }
     }
 
-    public boolean getPath(List<Segment> paths, Vector target) {
-        if(paths.isEmpty())
+    private void resolveShortestPath(LinkedHashMap<String, Segment> segments) {
+        if(shortestPathCount > segments.size() && segments.size() != 0) {
+            shortestPathCount = segments.size();
+
+            shortestPath.clear();
+            shortestPath.addAll(segments.values());
+        }
+    }
+
+    private boolean getPath(LinkedHashMap<String, Segment> paths, Segment head, Vector target) {
+        if(paths.isEmpty() || paths.size() > shortestPathCount)
             return false;
 
-        if(paths.size() > min)
-            return false;
+        for(Segment segment : head.getSegments()) {
+            String encodedSegment = segment.encodeSegment();
 
-        // TODO(0) needs to be done
-        for(Segment segment : paths.get(paths.size() - 1).getSegments()) {
             if(!segment.isThere(target)) {
-                boolean wasThere = false;
-                for(Segment seg : paths) {
-                    if(seg == segment)
-                        wasThere = true;
-                }
+                if(!paths.containsKey(encodedSegment)) {
+                    paths.put(encodedSegment, segment);
 
-                if(!wasThere) {
-                    paths.add(segment);
-
-                    if(getPath(paths, target)) {
+                    if(getPath(paths, segment, target)) {
                         return true;
                     } else {
-                        paths.remove(segment);
+                        // Backtracking as we reached the max segments or we found a possible solution
+                        paths.remove(encodedSegment);
                     }
                 }
             } else {
-                paths.add(segment);
+                paths.put(encodedSegment, segment);
 
-                min(paths);
+                resolveShortestPath(paths);
 
-                paths.remove(segment);
+                // Backtracking for best solution
+                paths.remove(encodedSegment);
 
                 return false;
             }
@@ -118,23 +120,24 @@ public class Phantom extends Spirit {
         return false;
     }
 
-    public Vector follow(List<Segment> segments, Vector pacman) {
-        if(segments.isEmpty())
+    private Vector followTarget(Vector target) {
+        if(shortestPath.isEmpty()) {
             return null;
+        }
 
-        Vector target;
-        if(segments.size() <= 1)
-            target = pacman;
-        else target = segments.get(1).getStart();
+        int size = shortestPath.size();
+        Segment head = shortestPath.get(0);
 
-        Segment segment = segments.get(0);
+        if(size > 1) {
+            target = Segment.getTarget(head, shortestPath.get(1));
+        } else return null;
 
         Vector position = getVector();
-        if(segment.orientation == Segment.HORIZONTAL) {
+        if(head.getOrientation() == Segment.HORIZONTAL) {
             if(position.getX() == target.getX()) {
-                segments.remove(0);
+                shortestPath.remove(head);
 
-                return follow(segments, pacman);
+                return followTarget(target);
             } else if(position.getX() < target.getX()) {
                 return Vector.getDirection(2);
             } else {
@@ -142,9 +145,9 @@ public class Phantom extends Spirit {
             }
         } else {
             if(position.getY() == target.getY()) {
-                segments.remove(0);
+                shortestPath.remove(head);
 
-                return follow(segments, pacman);
+                return followTarget(target);
             } else if(position.getY() < target.getY()) {
                 return Vector.getDirection(0);
             } else {
@@ -155,8 +158,9 @@ public class Phantom extends Spirit {
 
     @Override
     public void update(Board board) {
-        Vector nextPos;
-        if(minS.size() == 0 || ((nextPos = follow(minS, board.pacman.getVector())) == null)) {
+        Vector nextPos = followTarget(board.pacman.getVector());
+
+        if(nextPos == null) {
             Random random = new Random();
 
             int pos;
@@ -164,18 +168,25 @@ public class Phantom extends Spirit {
                 pos = random.nextInt(4);
 
                 nextPos = getVector().add(Vector.getDirection(pos));
-            } while(board.getField(nextPos) instanceof Wall);
+            } while(board.getPlayground().getField(nextPos) instanceof Wall);
         } else {
-            if(nextPos == null)
-                return;
-
             nextPos = getVector().add(nextPos);
         }
 
-        Vector currentPosition = board.resolveBoundaries(nextPos);
+        Vector currentPosition = board.getPlayground().resolveBoundaries(nextPos);
         board.checkCollisionPhantom(this);
 
         setVector(currentPosition);
         updateLayout();
+    }
+
+    @Override
+    public void wobble() {
+        double initialPosition = getImageView().getLayoutY() - Math.cos(wobblePivot) * 2.0f;
+
+        wobblePivot = (wobblePivot + 1.15f) % (Math.PI * 2.0f);
+        initialPosition += Math.cos(wobblePivot) * 2.0f;
+
+        getImageView().setLayoutY(initialPosition);
     }
 }

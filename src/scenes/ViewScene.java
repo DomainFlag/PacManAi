@@ -51,13 +51,13 @@ public abstract class ViewScene {
         WindowBarView windowBarView = new WindowBarView(getScene(), title);
         windowBarView.setStage(scenemator.getPrimaryStage());
         root.setTop(windowBarView);
-
-        onCreateScene(scene, root);
-        animateScene();
-        setOnKeySceneListener(scene);
     }
 
     public void showScene(Stage primaryStage) {
+        onCreateScene(scene, root);
+        animateScene();
+        setOnKeySceneListener(scene);
+
         primaryStage.setScene(scene);
         primaryStage.show();
 

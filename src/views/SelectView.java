@@ -2,11 +2,13 @@ package views;
 
 import interfaces.Inflater;
 import interfaces.ItemSelectable;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.input.MouseButton;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
+import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
+import tools.Log;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -56,7 +58,6 @@ public class SelectView<T extends Node> extends HBox implements Inflater {
         items.add(node);
 
         setOnClickListener(node, items.size() - 1);
-        getChildren().add(node);
     }
 
     public void setOnClickListener(T node, int index) {

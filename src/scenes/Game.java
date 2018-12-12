@@ -1,25 +1,21 @@
 package scenes;
 
 import controllers.Board;
-import core.Constants;
+import controllers.Playground;
 import core.Scenemator;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.canvas.Canvas;
-import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
-import javafx.scene.image.WritableImage;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
-import models.Field;
-import models.Vector;
+import models.GameSettings;
+import views.DrawingView;
 import views.TextView;
 
 public class Game extends ViewScene implements Board.OnGameOver {
 
     private Board board;
+    private GameSettings gameSettings = new GameSettings();
 
     private static final int GAME_ANIMATION = 150000000;
 
@@ -48,14 +44,32 @@ public class Game extends ViewScene implements Board.OnGameOver {
         hGameBox.setFillHeight(true);
         vBox.getChildren().add(hGameBox);
 
-        Pane pane1 = new Pane();
-        hGameBox.getChildren().add(pane1);
+        // Actual Game Play
+        Pane gamePane = new Pane();
+        hGameBox.getChildren().add(gamePane);
 
-        board = new Board(this);
+        Playground playground = new Playground();
+        playground.setStyle(gameSettings.getStyle());
+        playground.generateFields(gameSettings.getFile());
+        playground.generatePlaygroundSnapshot(gamePane,16);
+
+        DrawingView drawingView = new DrawingView(playground.getSnapshot());
+        drawingView.setRoot(0);
+
+        playground.inflate(drawingView);
+        playground.addObserver(drawingView);
+
+        // Adding the map snapshot below the inflated points views
+        drawingView.inflate(gamePane, 0);
+
+        board = new Board(this, playground);
         board.addBerserkView(textBerserkView);
         board.addObserver(textScoreView);
+        board.createCharacters(gamePane);
+    }
 
-        create(pane1, board);
+    public void onAttachGameSettings(GameSettings gameSettings) {
+        this.gameSettings = gameSettings;
     }
 
     @Override
@@ -71,34 +85,6 @@ public class Game extends ViewScene implements Board.OnGameOver {
     public void onAnimatorCallback() {
         board.onUpdatePhantoms();
         board.onUpdatePacMan();
-    }
-
-    public void create(Pane pane, Board board) {
-        Vector dimension = board.getDimension().multiply(Constants.TILE_DIMEN_DEFAULT);
-
-        Canvas canvas = new Canvas(dimension.getX(), dimension.getY());
-        GraphicsContext graphicsContext = canvas.getGraphicsContext2D();
-        for(int i = 0; i < board.fields.length; i++) {
-            for(int g = 0; g < board.fields[i].length; g++) {
-                Field field = board.fields[i][g];
-
-                Vector vector = new Vector(i, g);
-                Image image = field.inflate();
-
-                field.render(pane);
-
-                graphicsContext.drawImage(image,
-                        vector.getX() * Constants.TILE_DIMEN_DEFAULT,
-                        vector.getY() * Constants.TILE_DIMEN_DEFAULT,
-                        Constants.TILE_DIMEN_DEFAULT,
-                        Constants.TILE_DIMEN_DEFAULT);
-            }
-        }
-
-        WritableImage writableImage = canvas.snapshot(null, null);
-        pane.getChildren().add(0, new ImageView(writableImage));
-
-        board.createCharacters(pane);
     }
 
     @Override

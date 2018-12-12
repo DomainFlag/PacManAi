@@ -4,8 +4,6 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import scenes.Menu;
 import scenes.ViewScene;
-import tools.Log;
-
 import java.util.ArrayList;
 import java.util.List;
 

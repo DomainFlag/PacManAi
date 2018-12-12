@@ -58,10 +58,17 @@ public class PacMan extends Spirit {
     }
 
     @Override
+    public void wobble() {
+        imagePosition = (imagePosition + 1) % images.size();
+
+        getImageView().setImage(images.get(imagePosition));
+    }
+
+    @Override
     public void update(Board board) {
         Vector position = getVector().add(direction);
-        if(!(board.getField(position) instanceof Wall)) {
-            Vector currentPosition = board.resolveBoundaries(position);
+        if(!(board.getPlayground().getField(position) instanceof Wall)) {
+            Vector currentPosition = board.getPlayground().resolveBoundaries(position);
 
             board.checkCollisionPhantoms();
             board.checkCollisionPoints(currentPosition);
@@ -70,9 +77,6 @@ public class PacMan extends Spirit {
             updateLayout();
         }
 
-
-        imagePosition = (imagePosition + 1) % images.size();
-
-        getImageView().setImage(images.get(imagePosition));
+        wobble();
     }
 }

@@ -1,5 +1,7 @@
 package models;
 
+import core.Segment;
+
 import java.util.HashMap;
 
 public class Vector {
@@ -80,6 +82,18 @@ public class Vector {
 
     public int getY() {
         return y;
+    }
+
+    public int getOrientedValue(int orientation) {
+        if(orientation == Segment.HORIZONTAL)
+            return getX();
+        else return getY();
+    }
+
+    public int getOrientedPivot(int orientation) {
+        if(orientation == Segment.HORIZONTAL)
+            return getY();
+        else return getX();
     }
 
     public void setY(int y) {

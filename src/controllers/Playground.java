@@ -25,18 +25,16 @@ public class Playground extends Observable {
     private static final int START_OFFSET_ROW = 6;
     private static final int STYLE_COUNT = 3;
 
+    private File source = null;
     private ImageView imageView = null;
     private Field[][] fields = null;
     private Image snapshot = null;
     private Vector dimension = null;
+    private int total = 0;
     private int style = 0;
 
     public Vector getDimension() {
         return dimension;
-    }
-
-    public Field[][] getFields() {
-        return fields;
     }
 
     public Field getField(int i, int g) {
@@ -47,8 +45,16 @@ public class Playground extends Observable {
         this.style = Math.min(STYLE_COUNT - 1, Math.max(0, style));
     }
 
-    public int getStyle() {
-        return style;
+    public int getTotal() {
+        return total;
+    }
+
+    public void setTotal(int total) {
+        this.total = total;
+    }
+
+    public Image getSnapshot() {
+        return snapshot;
     }
 
     public Image generateTileImage(char type) {
@@ -68,6 +74,20 @@ public class Playground extends Observable {
         this.imageView = imageView;
 
         imageView.setImage(snapshot);
+    }
+
+    public Field getField(Vector vector) {
+        int x = vector.getX() < 0 ? dimension.getX() + vector.getX() : vector.getX() % dimension.getX();
+        int y = vector.getY() < 0 ? dimension.getY() + vector.getY() : vector.getY() % dimension.getY();
+
+        return fields[x][y];
+    }
+
+    public Vector resolveBoundaries(Vector vector) {
+        int x = vector.getX() < 0 ? dimension.getX() - 1 : vector.getX() % dimension.getX();
+        int y = vector.getY() < 0 ? dimension.getY() - 1: vector.getY() % dimension.getY();
+
+        return new Vector(x, y);
     }
 
     public void generatePlaygroundSnapshot(Pane rootLayout) {
@@ -109,7 +129,17 @@ public class Playground extends Observable {
         return imageView;
     }
 
+    public File getSource() {
+        return source;
+    }
+
+    public void setSource(File source) {
+        this.source = source;
+    }
+
     public void generateFields(File file) {
+        this.source = file;
+
         try {
             FileInputStream fileInputStream = new FileInputStream(file);
             InputStreamReader inputStreamReader = new InputStreamReader(fileInputStream);
@@ -145,6 +175,8 @@ public class Playground extends Observable {
                         case 'o' : {}
                         case 'p' : {
                             fields[row][col] = new Point(vector, type);
+
+                            total++;
                             break;
                         }
                         default : {

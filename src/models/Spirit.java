@@ -1,10 +1,12 @@
 package models;
 
 import controllers.Board;
+import controllers.Playground;
 import core.Constants;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.Pane;
+import tools.Log;
 
 import java.util.List;
 
@@ -62,4 +64,6 @@ public abstract class Spirit {
     }
 
     public abstract void update(Board board);
+
+    public abstract void wobble();
 }
