@@ -1,35 +1,48 @@
 package controllers;
 
+import com.sun.istack.internal.NotNull;
+import com.sun.istack.internal.Nullable;
 import core.Constants;
+import javafx.event.EventHandler;
 import javafx.scene.Node;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.image.WritableImage;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 import models.*;
+import models.Point;
+import scenes.Creator;
 import tools.Log;
 import views.DrawingView;
+import views.FieldView;
 
+import java.awt.*;
 import java.io.*;
+import java.util.List;
 import java.util.Observable;
 
 public class Playground extends Observable {
 
-    private static final String path = "file:./../res/textures/texture.png";
+    public interface OnSelectPlaygroundField {
+        void onSelectPlaygroundField(Field field);
+    }
 
+    private static final String path = "file:./../res/textures/texture.png";
     private static final Image image = new Image(path);
+
+    public static final int MAX_DIMEN = 32;
 
     private static final int START_OFFSET_COL = 28;
     private static final int START_OFFSET_ROW = 6;
     private static final int STYLE_COUNT = 3;
 
     private File source = null;
-    private ImageView imageView = null;
     private Field[][] fields = null;
     private Image snapshot = null;
-    private Vector dimension = null;
+    private Vector dimension = new Vector(MAX_DIMEN, MAX_DIMEN);
     private int total = 0;
     private int style = 0;
 
@@ -57,7 +70,7 @@ public class Playground extends Observable {
         return snapshot;
     }
 
-    public Image generateTileImage(char type) {
+    public static Image generateTileImage(char type, int style) {
         int normalized = ((int) type) - ((int) 'A');
 
         int row = normalized % 16;
@@ -71,8 +84,6 @@ public class Playground extends Observable {
     }
 
     public void inflate(ImageView imageView) {
-        this.imageView = imageView;
-
         imageView.setImage(snapshot);
     }
 
@@ -90,11 +101,55 @@ public class Playground extends Observable {
         return new Vector(x, y);
     }
 
-    public void generatePlaygroundSnapshot(Pane rootLayout) {
-        generatePlaygroundSnapshot(rootLayout, Constants.TILE_DIMEN_DEFAULT);
+    public File getSource() {
+        return source;
     }
 
-    public void generatePlaygroundSnapshot(Pane rootLayout, int tileDimension) {
+    public void adjustPlayground(Vector dimen) {
+        Vector topLeft = dimen, bottomRight = dimension;
+        if(dimen.isGreater(dimension)) {
+            topLeft = dimension;
+            bottomRight = dimen;
+        }
+
+        for(int i = 0; i < topLeft.getX(); i++) {
+            for(int g = topLeft.getY(); g < bottomRight.getY(); g++) {
+                fields[i][g].resolve();
+            }
+        }
+
+        for(int i = topLeft.getX(); i < bottomRight.getX(); i++) {
+            for(int g = 0; g < bottomRight.getY(); g++) {
+                fields[i][g].resolve();
+            }
+        }
+
+        this.dimension = Vector.cloneVector(dimen);
+    }
+
+    public void generatePlaygroundCreator(@NotNull Pane rootLayout, OnSelectPlaygroundField onSelectPlaygroundField) {
+        fields = new Field[MAX_DIMEN][MAX_DIMEN];
+
+        for(int i = 0; i < dimension.getX(); i++) {
+            for(int g = 0; g < dimension.getY(); g++) {
+                Vector position = new Vector(i, g);
+                Field field = new Field(position, 'n');
+
+                fields[i][g] = field;
+
+                FieldView fieldView = new FieldView(field.getVector());
+                fieldView.setImage(generateTileImage(field.getType(), 0));
+                fieldView.inflate(rootLayout);
+                fieldView.setOnMouseClicked(event -> {
+                    onSelectPlaygroundField.onSelectPlaygroundField(field);
+                });
+
+                field.addObserver(fieldView);
+            }
+        }
+    }
+
+    public void generatePlaygroundSnapshot(@Nullable Pane rootLayout, int tileDimension) {
         Vector dimensionScaled = dimension.multiply(tileDimension);
 
         Canvas canvas = new Canvas(dimensionScaled.getX(), dimensionScaled.getY());
@@ -102,10 +157,18 @@ public class Playground extends Observable {
         for(int i = 0; i < dimension.getX(); i++) {
             for(int g = 0; g < dimension.getY(); g++) {
                 Field field = fields[i][g];
-                field.render(rootLayout);
+                if(rootLayout != null && field instanceof Point) {
+                    Point point = (Point) field;
+
+                    FieldView fieldView = new FieldView(field.getVector());
+                    fieldView.setImage(generateTileImage(point.getFloatedType(), style));
+                    fieldView.inflate(rootLayout);
+
+                    field.addObserver(fieldView);
+                }
 
                 Vector vector = new Vector(i, g);
-                Image image = generateTileImage(field.getType());
+                Image image = Playground.generateTileImage(field.getType(), style);
 
                 graphicsContext.drawImage(image,
                         vector.getX() * tileDimension,
@@ -119,22 +182,54 @@ public class Playground extends Observable {
         notifyObservers(snapshot);
     }
 
-    public void generateFields(String path) {
-        File file = new File(path);
 
-        generateFields(file);
+    public void saveBoard(String filename) {
+        try {
+            FileOutputStream fileOutputStream = new FileOutputStream("res/maps/" + filename + ".txt");
+            OutputStreamWriter outputStreamWriter = new OutputStreamWriter(fileOutputStream);
+            BufferedWriter bufferedWriter = new BufferedWriter(outputStreamWriter);
+
+            bufferedWriter.write(encodeBoard());
+            bufferedWriter.close();
+        } catch(IOException e) {
+            Log.v(e.toString());
+        }
     }
 
-    public ImageView getImageView() {
-        return imageView;
+    public void fillPoints() {
+//        Image image = Playground.generateTileImage('n', 0);
+//
+//        for(int g = 0; g < dimension.getX(); g++) {
+//            List<Piece> boardCol = board.get(g);
+//
+//            for(int h = 0; h < dimension.getY(); h++) {
+//                Piece piece = boardCol.get(h);
+//
+//                if(piece.getType() == 'm') {
+//                    piece.setType('n');
+//                    piece.getImageView().setImage(image);
+//                }
+//            }
+//        }
     }
 
-    public File getSource() {
-        return source;
-    }
+    private String encodeBoard() {
+        StringBuilder stringBuilder = new StringBuilder();
 
-    public void setSource(File source) {
-        this.source = source;
+        stringBuilder.append(dimension.getX());
+        stringBuilder.append(" ");
+        stringBuilder.append(dimension.getY());
+        stringBuilder.append("\n");
+
+        for(int i = 0; i < dimension.getX(); i++) {
+            for(int g = 0; g < dimension.getY(); g++) {
+                stringBuilder.append(fields[i][g].getType());
+            }
+
+            stringBuilder.append("\n");
+        }
+
+        return stringBuilder.toString();
     }
 
     public void generateFields(File file) {

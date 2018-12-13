@@ -19,7 +19,7 @@ public class Game extends ViewScene implements Board.OnGameOver {
 
     private static final int GAME_ANIMATION = 150000000;
 
-    public Game(Scenemator scenemator) {
+    Game(Scenemator scenemator) {
         super(scenemator, "Pac-Man");
     }
 
@@ -68,7 +68,7 @@ public class Game extends ViewScene implements Board.OnGameOver {
         board.createCharacters(gamePane);
     }
 
-    public void onAttachGameSettings(GameSettings gameSettings) {
+    void onAttachGameSettings(GameSettings gameSettings) {
         this.gameSettings = gameSettings;
     }
 

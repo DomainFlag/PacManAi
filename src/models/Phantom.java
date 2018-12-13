@@ -1,10 +1,7 @@
 package models;
 
-import com.sun.deploy.util.OrderedHashSet;
 import controllers.Board;
-import core.Segment;
-import javafx.scene.image.Image;
-import tools.Log;
+import views.FieldView;
 
 import java.util.*;
 
@@ -12,35 +9,26 @@ public class Phantom extends Spirit {
 
     public static final int PHANTOM_SCORE = 250;
 
-    private static final List<String> paths = new ArrayList<>();
-
-    static {
-        paths.add("file:./../res/textures/ghost-normal.png");
-        paths.add("file:./../res/textures/ghost-scared.png");
-    }
-
-    private static final List<Image> images = new ArrayList<>();
-
-    private double wobblePivot = 0.0f;
-
     private List<Segment> shortestPath = new ArrayList<>();
+    private float wobblePivot = 0f;
     private int shortestPathCount = Integer.MAX_VALUE;
 
-    static {
-        for(String path : paths) {
-            images.add(new Image(path));
-        }
-    }
-
     public Phantom(Vector vector) {
-        super(vector, images);
+        super(vector);
     }
 
-    public void resolveBerserkState(boolean berserk) {
+    @Override
+    public String getDefaultImage() {
+        return FieldView.PHANTOM_NORMAL;
+    }
+
+    private void resolveBerserkState(boolean berserk) {
+        setChanged();
+
         if(berserk) {
-            getImageView().setImage(images.get(1));
+            notifyObservers(FieldView.PHANTOM_SCARED);
         } else {
-            getImageView().setImage(images.get(0));
+            notifyObservers(FieldView.PHANTOM_NORMAL);
         }
     }
 
@@ -91,6 +79,9 @@ public class Phantom extends Spirit {
         if(paths.isEmpty() || paths.size() > shortestPathCount)
             return false;
 
+        if(paths.size() > 15)
+            return false;
+
         for(Segment segment : head.getSegments()) {
             String encodedSegment = segment.encodeSegment();
 
@@ -125,8 +116,8 @@ public class Phantom extends Spirit {
             return null;
         }
 
-        int size = shortestPath.size();
         Segment head = shortestPath.get(0);
+        int size = shortestPath.size();
 
         if(size > 1) {
             target = Segment.getTarget(head, shortestPath.get(1));
@@ -139,9 +130,9 @@ public class Phantom extends Spirit {
 
                 return followTarget(target);
             } else if(position.getX() < target.getX()) {
-                return Vector.getDirection(2);
+                return Vector.getDirection(2).getVector();
             } else {
-                return Vector.getDirection(3);
+                return Vector.getDirection(3).getVector();
             }
         } else {
             if(position.getY() == target.getY()) {
@@ -149,9 +140,9 @@ public class Phantom extends Spirit {
 
                 return followTarget(target);
             } else if(position.getY() < target.getY()) {
-                return Vector.getDirection(0);
+                return Vector.getDirection(0).getVector();
             } else {
-                return Vector.getDirection(1);
+                return Vector.getDirection(1).getVector();
             }
         }
     }
@@ -167,7 +158,7 @@ public class Phantom extends Spirit {
             do {
                 pos = random.nextInt(4);
 
-                nextPos = getVector().add(Vector.getDirection(pos));
+                nextPos = getVector().add(Vector.getDirection(pos).getVector());
             } while(board.getPlayground().getField(nextPos) instanceof Wall);
         } else {
             nextPos = getVector().add(nextPos);
@@ -177,16 +168,16 @@ public class Phantom extends Spirit {
         board.checkCollisionPhantom(this);
 
         setVector(currentPosition);
-        updateLayout();
+
+        setChanged();
+        notifyObservers(currentPosition);
     }
 
     @Override
     public void wobble() {
-        double initialPosition = getImageView().getLayoutY() - Math.cos(wobblePivot) * 2.0f;
+        wobblePivot = (wobblePivot + 1.15f) % ((float) Math.PI);
 
-        wobblePivot = (wobblePivot + 1.15f) % (Math.PI * 2.0f);
-        initialPosition += Math.cos(wobblePivot) * 2.0f;
-
-        getImageView().setLayoutY(initialPosition);
+        setChanged();
+        notifyObservers((Math.cos(wobblePivot) * 5.0f));
     }
 }

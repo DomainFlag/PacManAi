@@ -1,15 +1,14 @@
 package controllers;
 
-import core.Segment;
+import models.Segment;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import models.*;
 import scenes.Game;
-import tools.Log;
+import views.FieldView;
 import views.TextView;
 
-import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -33,8 +32,8 @@ public class Board extends Observable {
     private int points = 0;
     private boolean berserk = false;
 
+    private List<Phantom> phantoms = new ArrayList<>();
     public PacMan pacman = new PacMan(new Vector(0, 14));
-    public List<Phantom> phantoms = new ArrayList<>();
 
     {
         phantoms.add(new Phantom(new Vector(12, 14)));
@@ -58,7 +57,26 @@ public class Board extends Observable {
     }
 
     public void onUpdateKeyListener(KeyCode key) {
-        pacman.updatePosition(key);
+        Direction direction;
+        switch(key) {
+            case UP : {
+                direction = Vector.getDirection(1);
+                break;
+            }
+            case DOWN : {
+                direction = Vector.getDirection(0);
+                break;
+            }
+            case RIGHT : {
+                direction = Vector.getDirection(2);
+                break;
+            }
+            default : {
+                direction = Vector.getDirection(3);
+            }
+        }
+
+        pacman.updatePosition(direction);
 
         resolveGameState();
     }
@@ -76,11 +94,21 @@ public class Board extends Observable {
         pacman.update(this);
     }
 
-    public void createCharacters(Pane pane) {
-        pacman.render(pane);
+    private void createCharacter(Spirit spirit, Pane pane) {
+        FieldView fieldView = new FieldView();
+        fieldView.inflateImage(spirit.getDefaultImage());
+        fieldView.changeLayout(spirit.getVector());
+        fieldView.inflate(pane);
 
-        for(Phantom phantom : phantoms)
-            phantom.render(pane);
+        spirit.addObserver(fieldView);
+    }
+
+    public void createCharacters(Pane pane) {
+        createCharacter(pacman, pane);
+
+        for(Phantom phantom : phantoms) {
+            createCharacter(phantom, pane);
+        }
     }
 
     private void resolveScore(int value) {
@@ -142,18 +170,6 @@ public class Board extends Observable {
 
             resolveScore(value);
         }
-    }
-
-    public PacMan getPacman() {
-        return pacman;
-    }
-
-    public List<Phantom> getPhantoms() {
-        return phantoms;
-    }
-
-    public HashMap<String, Segment> getGraph() {
-        return graph;
     }
 
     public void resolveGraph(Vector start, int orientation) {

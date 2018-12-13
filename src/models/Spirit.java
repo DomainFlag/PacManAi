@@ -1,49 +1,22 @@
 package models;
 
 import controllers.Board;
-import controllers.Playground;
-import core.Constants;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
-import javafx.scene.layout.Pane;
-import tools.Log;
+import java.util.Observable;
 
-import java.util.List;
+public abstract class Spirit extends Observable {
 
-public abstract class Spirit {
-
-    private Pane root;
-    private List<Image> images;
     private Vector vector;
-    private ImageView imageView;
-
     public boolean active = true;
 
-    public Spirit(Vector vector, List<Image> images) {
+    public Spirit(Vector vector) {
         this.vector = vector;
-        this.images = images;
-    }
-
-    public void render(Pane pane) {
-        this.root = pane;
-
-        imageView = new ImageView(images.get(0));
-        imageView.setFitWidth(Constants.TILE_DIMEN_DEFAULT);
-        imageView.setFitHeight(Constants.TILE_DIMEN_DEFAULT);
-
-        updateLayout();
-
-        pane.getChildren().add(imageView);
     }
 
     public void disable() {
-        root.getChildren().remove(imageView);
-        active = false;
-    }
+        setChanged();
+        notifyObservers(false);
 
-    public void updateLayout() {
-        imageView.setLayoutX(vector.getX() * Constants.TILE_DIMEN_DEFAULT);
-        imageView.setLayoutY(vector.getY() * Constants.TILE_DIMEN_DEFAULT);
+        active = false;
     }
 
     public Vector getVector() {
@@ -54,14 +27,12 @@ public abstract class Spirit {
         this.vector = vector;
     }
 
-    public ImageView getImageView() {
-        return imageView;
-    }
-
     public void updateSpirit(Board board) {
         if(active)
             update(board);
     }
+
+    public abstract String getDefaultImage();
 
     public abstract void update(Board board);
 

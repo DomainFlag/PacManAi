@@ -11,14 +11,16 @@ import javafx.scene.effect.DropShadow;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.*;
+import javafx.scene.media.Media;
+import javafx.scene.media.MediaPlayer;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import models.GameSettings;
 import models.PacMan;
 import models.Phantom;
 import models.Vector;
-import tools.Log;
 import views.DrawingView;
+import views.FieldView;
 import views.SelectView;
 import views.TextView;
 
@@ -208,11 +210,24 @@ public class Menu extends ViewScene {
         paneCharacters.setPadding(new Insets(8));
         hCharactersBox.getChildren().add(paneCharacters);
 
+        // PacMan inflating
         PacMan pacMan = new PacMan(new Vector(0, 0));
-        pacMan.render(paneCharacters);
 
+        FieldView fieldPacManView = new FieldView();
+        fieldPacManView.changeLayout(pacMan.getVector());
+        fieldPacManView.inflate(paneCharacters);
+
+        pacMan.addObserver(fieldPacManView);
+
+        // Phantom inflating
         Phantom phantom = new Phantom(new Vector(5, 0));
-        phantom.render(paneCharacters);
+
+        FieldView fieldPhantomView = new FieldView();
+        fieldPhantomView.changeLayout(phantom.getVector());
+        fieldPhantomView.inflateImage(FieldView.PHANTOM_NORMAL);
+        fieldPhantomView.inflate(paneCharacters);
+
+        phantom.addObserver(fieldPhantomView);
 
         // 10 fps
         int durationPacManAnimation = 96000000;
@@ -300,10 +315,5 @@ public class Menu extends ViewScene {
     public void onKeySceneListener(KeyCode keyCode) {
         if(keyCode == KeyCode.ENTER)
             startGame();
-    }
-
-    @Override
-    public void onAnimatorCallback() {
-
     }
 }

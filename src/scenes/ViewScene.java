@@ -138,11 +138,11 @@ public abstract class ViewScene {
         }));
     }
 
+    public void onAnimatorCallback() {}
+
     public abstract void onCreateScene(Scene scene, BorderPane root);
 
     public abstract void onKeySceneListener(KeyCode keyCode);
-
-    public abstract void onAnimatorCallback();
 
     private class TimeOut {
         private long duration;

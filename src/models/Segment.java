@@ -1,9 +1,6 @@
-package core;
+package models;
 
-import controllers.Board;
 import controllers.Playground;
-import models.Vector;
-import models.Wall;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -18,12 +15,12 @@ public class Segment {
 
     static {
         List<Vector> horizontal = new ArrayList<>();
-        horizontal.add(Vector.getDirection(2));
-        horizontal.add(Vector.getDirection(3));
+        horizontal.add(Vector.getDirection(2).getVector());
+        horizontal.add(Vector.getDirection(3).getVector());
 
         List<Vector> vertical = new ArrayList<>();
-        vertical.add(Vector.getDirection(0));
-        vertical.add(Vector.getDirection(1));
+        vertical.add(Vector.getDirection(0).getVector());
+        vertical.add(Vector.getDirection(1).getVector());
 
         orientations.add(horizontal);
         orientations.add(vertical);
@@ -34,13 +31,13 @@ public class Segment {
     private int pivot;
     private int orientation;
 
-    public Segment(Vector range, int pivot, int orientation) {
+    private Segment(Vector range, int pivot, int orientation) {
         this.range = range;
         this.pivot = pivot;
         this.orientation = orientation;
     }
 
-    public static Vector getTarget(Segment head, Segment tail) {
+    static Vector getTarget(Segment head, Segment tail) {
         if(head.orientation == HORIZONTAL) {
             return new Vector(tail.pivot, head.pivot);
         } else {
@@ -48,15 +45,11 @@ public class Segment {
         }
     }
 
-    public int getPivot() {
-        return pivot;
-    }
-
-    public int getOrientation() {
+    int getOrientation() {
         return orientation;
     }
 
-    public List<Segment> getSegments() {
+    List<Segment> getSegments() {
         return segments;
     }
 
@@ -64,7 +57,7 @@ public class Segment {
         segments.add(segment);
     }
 
-    public boolean isThere(Vector vector) {
+    boolean isThere(Vector vector) {
         if(orientation == Segment.HORIZONTAL) {
             return pivot == vector.getY() &&
                     (range.getX() <= vector.getX() && vector.getX() <= range.getY() ||

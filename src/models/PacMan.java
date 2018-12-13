@@ -1,67 +1,41 @@
 package models;
 
 import controllers.Board;
-import javafx.scene.image.Image;
-import javafx.scene.input.KeyCode;
 
-import java.util.ArrayList;
-import java.util.List;
+import views.FieldView;
 
 public class PacMan extends Spirit {
 
-    private static final List<String> paths = new ArrayList<>();
-
-    static {
-        paths.add("file:./../res/textures/pacman-hungry.png");
-        paths.add("file:./../res/textures/pacman-fed.png");
-    }
-
-    private static final List<Image> images = new ArrayList<>();
     private Vector direction = new Vector(1, 0);
     private int imagePosition = 0;
 
-    static {
-        for(String path : paths) {
-            images.add(new Image(path));
-        }
-    }
-
     public PacMan(Vector vector) {
-        super(vector, images);
+        super(vector);
     }
 
-    public void updatePosition(KeyCode keyCode) {
-        int pos;
-        switch(keyCode) {
-            case UP : {
-                getImageView().setRotate(270);
-                pos = 1;
-                break;
-            }
-            case DOWN : {
-                getImageView().setRotate(90);
-                pos = 0;
-                break;
-            }
-            case RIGHT : {
-                getImageView().setRotate(0);
-                pos = 2;
-                break;
-            }
-            default : {
-                getImageView().setRotate(180);
-                pos = 3;
-            }
-        }
+    @Override
+    public String getDefaultImage() {
+        return FieldView.PACMAN_HUNGRY;
+    }
 
-        direction = Vector.getDirection(pos);
+    public void updatePosition(Direction direction) {
+        this.direction = direction.getVector();
+
+        setChanged();
+        notifyObservers(direction.getRotation());
     }
 
     @Override
     public void wobble() {
-        imagePosition = (imagePosition + 1) % images.size();
+        imagePosition = (imagePosition + 1) % 2;
 
-        getImageView().setImage(images.get(imagePosition));
+        String imageToBeUpdated;
+        if(imagePosition == 0)
+            imageToBeUpdated = FieldView.PACMAN_FED;
+        else imageToBeUpdated = FieldView.PACMAN_HUNGRY;
+
+        setChanged();
+        notifyObservers(imageToBeUpdated);
     }
 
     @Override
@@ -74,7 +48,9 @@ public class PacMan extends Spirit {
             board.checkCollisionPoints(currentPosition);
 
             setVector(currentPosition);
-            updateLayout();
+
+            setChanged();
+            notifyObservers(currentPosition);
         }
 
         wobble();

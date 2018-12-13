@@ -56,7 +56,7 @@ public class EditTextView extends TextField implements Inflater, Observer {
         error.setVisible(!errorMessage.isEmpty());
     }
 
-    public void onSetErrorLabel(String errorMessage){
+    public void onSetErrorLabel(String errorMessage) {
         error = new Label(errorMessage);
         error.setLabelFor(this);
         error.setTextFill(Color.RED);
