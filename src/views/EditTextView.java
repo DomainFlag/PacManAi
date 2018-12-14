@@ -1,10 +1,7 @@
 package views;
 
 import interfaces.Inflater;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.geometry.Insets;
-import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.*;
@@ -22,8 +19,8 @@ public class EditTextView extends TextField implements Inflater, Observer {
 
     private OnEditTextChangeListener onEditTextChangeListener = null;
 
-    private Label label;
-    private Label error;
+    private Label label = new Label();
+    private Label error = new Label();
 
     public EditTextView(String text, String placeholder, String label) {
         super(text);
@@ -36,10 +33,9 @@ public class EditTextView extends TextField implements Inflater, Observer {
             if(onEditTextChangeListener != null) {
                 if(newValue.matches("\\d*")) {
                     String value = newValue.replaceAll("[^\\d]", "");
+                    onChangeErrorLabel(null);
 
                     onEditTextChangeListener.onEditTextChangeListener(value);
-
-                    onChangeErrorLabel("");
                 } else {
                     onChangeErrorLabel("Numerical value required!");
                 }
@@ -48,23 +44,19 @@ public class EditTextView extends TextField implements Inflater, Observer {
         setStyle("-fx-text-inner-color: white");
 
         onSetTitleLabel(label);
-        onSetErrorLabel("");
+        onSetErrorLabel();
     }
 
     public void onChangeErrorLabel(String errorMessage) {
         error.setText(errorMessage);
-        error.setVisible(!errorMessage.isEmpty());
+        error.setVisible(!((errorMessage == null) || errorMessage.isEmpty()));
     }
 
-    public void onSetErrorLabel(String errorMessage) {
-        error = new Label(errorMessage);
+    private void onSetErrorLabel() {
         error.setLabelFor(this);
         error.setTextFill(Color.RED);
         error.setFont(new Font(10));
         error.setPadding(new Insets(4, 0, 4, 0));
-
-        if(errorMessage.isEmpty())
-            error.setVisible(false);
     }
 
     public void onAttachEditTextChangeListener(OnEditTextChangeListener onEditTextChangeListener) {
@@ -72,11 +64,15 @@ public class EditTextView extends TextField implements Inflater, Observer {
     }
 
     public void onSetTitleLabel(String labelText) {
-        label = new Label(labelText);
+        label.setText(labelText);
         label.setLabelFor(this);
         label.setTextFill(Color.LIGHTGRAY);
         label.setFont(new Font(12));
         label.setPadding(new Insets(8, 0, 8, 0));
+
+        if(labelText.isEmpty())
+            label.setVisible(false);
+        else label.setVisible(true);
     }
 
     @Override

@@ -14,21 +14,15 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
-import models.Field;
-import models.Point;
 import models.Vector;
-import tools.Log;
 import views.EditTextView;
-import views.FieldView;
 import views.TextView;
 
 import java.io.*;
-import java.util.ArrayList;
 import java.util.List;
 
 public class Creator extends ViewScene {
 
-    private Vector dimension = new Vector(Playground.MAX_DIMEN, Playground.MAX_DIMEN);
     private Character currentType = 'A';
 
     public Creator(Scenemator scenemator) {
@@ -110,8 +104,13 @@ public class Creator extends ViewScene {
             if(!value.isEmpty()) {
                 int width = Integer.valueOf(value);
 
-                dimension.setX(width);
-                playground.adjustPlayground(dimension);
+                if(playground.resolveDimension(width)) {
+                    Vector dimension = new Vector(width, playground.getDimension().getY());
+
+                    playground.adjustPlayground(dimension);
+                } else {
+                    editTextWidthView.onChangeErrorLabel("Maximum boundary is " + Playground.MAX_DIMEN);
+                }
             }
         });
         editTextWidthView.inflate(pane);
@@ -122,8 +121,13 @@ public class Creator extends ViewScene {
             if(!value.isEmpty()) {
                 int height = Integer.valueOf(value);
 
-                dimension.setY(height);
-                playground.adjustPlayground(dimension);
+                if(playground.resolveDimension(height)) {
+                    Vector dimension = new Vector(playground.getDimension().getX(), height);
+
+                    playground.adjustPlayground(dimension);
+                } else {
+                    editTextHeightView.onChangeErrorLabel("Maximum boundary is " + Playground.MAX_DIMEN);
+                }
             }
         });
         editTextHeightView.inflate(pane);
@@ -149,14 +153,10 @@ public class Creator extends ViewScene {
             int optionItemSelected = newValue.intValue() - 1;
             if(optionItemSelected >= 0) {
                 File file = files.get(optionItemSelected);
+                playground.generateFields(file);
 
-//                Playground playground = new Playground();
-//                playground.generateFields(file);
-//
-//                editTextHeightView.setText(String.valueOf(playground.getDimension().getX()));
-//                editTextWidthView.setText(String.valueOf(playground.getDimension().getY()));
-//
-//                playground.resolvePlayground(playground);
+                editTextHeightView.setText(String.valueOf(playground.getDimension().getX()));
+                editTextWidthView.setText(String.valueOf(playground.getDimension().getY()));
             }
         });
 

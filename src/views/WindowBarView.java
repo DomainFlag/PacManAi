@@ -1,13 +1,17 @@
 package views;
 
+import interfaces.Inflater;
 import javafx.scene.Scene;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
-import tools.Log;
+import core.Log;
 
-public class WindowBarView extends HBox {
+import java.util.Observable;
+import java.util.Observer;
+
+public class WindowBarView extends HBox implements Inflater, Observer {
 
     public WindowBarView(Scene scene, String title) {
         TextView textView = new TextView(title, 18, Color.WHITE, 16);
@@ -59,6 +63,16 @@ public class WindowBarView extends HBox {
             stage.setX(mouseEvent.getScreenX() + dragDelta.x);
             stage.setY(mouseEvent.getScreenY() + dragDelta.y);
         });
+    }
+
+    @Override
+    public void inflate(Pane pane) {
+        pane.getChildren().add(0, this);
+    }
+
+    @Override
+    public void update(Observable o, Object arg) {
+
     }
 
     class Delta {

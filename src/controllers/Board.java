@@ -94,7 +94,7 @@ public class Board extends Observable {
         pacman.update(this);
     }
 
-    private void createCharacter(Spirit spirit, Pane pane) {
+    public void createCharacter(Spirit spirit, Pane pane) {
         FieldView fieldView = new FieldView();
         fieldView.inflateImage(spirit.getDefaultImage());
         fieldView.changeLayout(spirit.getVector());
@@ -159,7 +159,7 @@ public class Board extends Observable {
                 berserkView.setFill(Color.RED);
                 berserk = true;
 
-                game.registerTimeOutListener(() -> {
+                game.registerTimeOutCallback(() -> {
                     Phantom.resolveBerserkState(phantoms, false);
                     berserkView.setFill(Color.WHITE);
                     berserk = false;

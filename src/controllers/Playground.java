@@ -2,26 +2,18 @@ package controllers;
 
 import com.sun.istack.internal.NotNull;
 import com.sun.istack.internal.Nullable;
-import core.Constants;
-import javafx.event.EventHandler;
-import javafx.scene.Node;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.image.WritableImage;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 import models.*;
 import models.Point;
-import scenes.Creator;
-import tools.Log;
-import views.DrawingView;
+import core.Log;
 import views.FieldView;
 
-import java.awt.*;
 import java.io.*;
-import java.util.List;
 import java.util.Observable;
 
 public class Playground extends Observable {
@@ -42,16 +34,12 @@ public class Playground extends Observable {
     private File source = null;
     private Field[][] fields = null;
     private Image snapshot = null;
-    private Vector dimension = new Vector(MAX_DIMEN, MAX_DIMEN);
+    private Vector dimension = null;
     private int total = 0;
     private int style = 0;
 
     public Vector getDimension() {
         return dimension;
-    }
-
-    public Field getField(int i, int g) {
-        return fields[i][g];
     }
 
     public void setStyle(int style) {
@@ -68,19 +56,6 @@ public class Playground extends Observable {
 
     public Image getSnapshot() {
         return snapshot;
-    }
-
-    public static Image generateTileImage(char type, int style) {
-        int normalized = ((int) type) - ((int) 'A');
-
-        int row = normalized % 16;
-        int col = (normalized - row) / 16;
-
-        return new WritableImage(image.getPixelReader(),
-                START_OFFSET_COL * 8 + 1 + row * 9,
-                (style * 3 + col) * 9,
-                8,
-                8);
     }
 
     public void inflate(ImageView imageView) {
@@ -105,6 +80,10 @@ public class Playground extends Observable {
         return source;
     }
 
+    public boolean resolveDimension(int dimension) {
+        return dimension <= MAX_DIMEN;
+    }
+
     public void adjustPlayground(Vector dimen) {
         Vector topLeft = dimen, bottomRight = dimension;
         if(dimen.isGreater(dimension)) {
@@ -127,7 +106,21 @@ public class Playground extends Observable {
         this.dimension = Vector.cloneVector(dimen);
     }
 
+    public static Image generateTileImage(char type, int style) {
+        int normalized = ((int) type) - ((int) 'A');
+
+        int row = normalized % 16;
+        int col = (normalized - row) / 16;
+
+        return new WritableImage(image.getPixelReader(),
+                START_OFFSET_COL * 8 + 1 + row * 9,
+                (style * 3 + col) * 9,
+                8,
+                8);
+    }
+
     public void generatePlaygroundCreator(@NotNull Pane rootLayout, OnSelectPlaygroundField onSelectPlaygroundField) {
+        dimension = new Vector(MAX_DIMEN, MAX_DIMEN);
         fields = new Field[MAX_DIMEN][MAX_DIMEN];
 
         for(int i = 0; i < dimension.getX(); i++) {
@@ -197,20 +190,12 @@ public class Playground extends Observable {
     }
 
     public void fillPoints() {
-//        Image image = Playground.generateTileImage('n', 0);
-//
-//        for(int g = 0; g < dimension.getX(); g++) {
-//            List<Piece> boardCol = board.get(g);
-//
-//            for(int h = 0; h < dimension.getY(); h++) {
-//                Piece piece = boardCol.get(h);
-//
-//                if(piece.getType() == 'm') {
-//                    piece.setType('n');
-//                    piece.getImageView().setImage(image);
-//                }
-//            }
-//        }
+        for(int g = 0; g < dimension.getX(); g++) {
+            for(int h = 0; h < dimension.getY(); h++) {
+                if(fields[g][h].getType() == Location.LOCATION_TYPE)
+                    fields[g][h].resolve('n');
+            }
+        }
     }
 
     private String encodeBoard() {
@@ -251,8 +236,15 @@ public class Playground extends Observable {
             int width = Integer.valueOf(dimensions[1]);
             int height = Integer.valueOf(dimensions[0]);
 
-            dimension = new Vector(width, height);
-            fields = new Field[width][height];
+            Vector dimen = new Vector(width, height);
+            boolean activePlayground = dimension != null;
+
+            if(dimension == null) {
+                fields = new Field[width][height];
+                dimension = dimen;
+            } else {
+                adjustPlayground(dimen);
+            }
 
             int row = 0;
             while((line = bufferedReader.readLine()) != null) {
@@ -261,21 +253,25 @@ public class Playground extends Observable {
 
                     char type = line.charAt(col);
 
-                    switch(type) {
-                        case 'm' : {
-                            fields[row][col] = new Location(vector, 'm');
-                            break;
-                        }
-                        case 'n' : {}
-                        case 'o' : {}
-                        case 'p' : {
-                            fields[row][col] = new Point(vector, type);
+                    if(activePlayground) {
+                        fields[row][col].resolve(type);
+                    } else {
+                        switch(type) {
+                            case Location.LOCATION_TYPE : {
+                                fields[row][col] = new Location(vector, Location.LOCATION_TYPE);
+                                break;
+                            }
+                            case 'n' : {}
+                            case 'o' : {}
+                            case 'p' : {
+                                fields[row][col] = new Point(vector, type);
 
-                            total++;
-                            break;
-                        }
-                        default : {
-                            fields[row][col] = new Wall(vector, type);
+                                total++;
+                                break;
+                            }
+                            default : {
+                                fields[row][col] = new Wall(vector, type);
+                            }
                         }
                     }
                 }

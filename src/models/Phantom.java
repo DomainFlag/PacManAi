@@ -59,7 +59,9 @@ public class Phantom extends Spirit {
                 LinkedHashMap<String, Segment> paths = new LinkedHashMap<>();
                 paths.put(segment.encodeSegment(), segment);
 
-                getPath(paths, segment, target);
+                if(!segment.isThere(target)) {
+                    getPath(paths, segment, target);
+                }
 
                 break;
             }
@@ -119,27 +121,30 @@ public class Phantom extends Spirit {
         Segment head = shortestPath.get(0);
         int size = shortestPath.size();
 
+        Vector goal;
         if(size > 1) {
-            target = Segment.getTarget(head, shortestPath.get(1));
-        } else return null;
+            goal = Segment.getTarget(head, shortestPath.get(1));
+        } else {
+            goal = target;
+        }
 
         Vector position = getVector();
         if(head.getOrientation() == Segment.HORIZONTAL) {
-            if(position.getX() == target.getX()) {
+            if(position.getX() == goal.getX()) {
                 shortestPath.remove(head);
 
                 return followTarget(target);
-            } else if(position.getX() < target.getX()) {
+            } else if(position.getX() < goal.getX()) {
                 return Vector.getDirection(2).getVector();
             } else {
                 return Vector.getDirection(3).getVector();
             }
         } else {
-            if(position.getY() == target.getY()) {
+            if(position.getY() == goal.getY()) {
                 shortestPath.remove(head);
 
                 return followTarget(target);
-            } else if(position.getY() < target.getY()) {
+            } else if(position.getY() < goal.getY()) {
                 return Vector.getDirection(0).getVector();
             } else {
                 return Vector.getDirection(1).getVector();
@@ -151,7 +156,7 @@ public class Phantom extends Spirit {
     public void update(Board board) {
         Vector nextPos = followTarget(board.pacman.getVector());
 
-        if(nextPos == null) {
+        if(nextPos == null || (board.getPlayground().getField(getVector().add(nextPos)) instanceof Wall)) {
             Random random = new Random();
 
             int pos;

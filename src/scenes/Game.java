@@ -33,6 +33,15 @@ public class Game extends ViewScene implements Board.OnGameOver {
 
         pane.setCenter(vBox);
 
+        // Setting the game layout and the actual board
+        setLayoutGame(vBox);
+    }
+
+    /**
+     * Game layout and actual board with stats
+     * @param vBox root layout
+     */
+    private void setLayoutGame(VBox vBox) {
         TextView textBerserkView = new TextView("Berserk Mode", 16, Color.WHITE, 16);
         textBerserkView.inflate(vBox);
 

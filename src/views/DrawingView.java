@@ -36,20 +36,8 @@ public class DrawingView extends ImageView implements Inflater, Observer {
         setRoot(padding);
     }
 
-    public DrawingView(String path, int padding) {
-        super(path);
-
-        setRoot(padding);
-    }
-
     public DrawingView() {
         super();
-
-        setRoot(0);
-    }
-
-    public DrawingView(String url) {
-        super(url);
 
         setRoot(0);
     }
@@ -70,13 +58,13 @@ public class DrawingView extends ImageView implements Inflater, Observer {
         root.getChildren().add(this);
     }
 
+    public void inflate(Pane pane, int index) {
+        pane.getChildren().add(index, root);
+    }
+
     @Override
     public void inflate(Pane pane) {
         pane.getChildren().add(root);
-    }
-
-    public void inflate(Pane pane, int index) {
-        pane.getChildren().add(index, root);
     }
 
     @Override

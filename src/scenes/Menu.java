@@ -39,9 +39,9 @@ public class Menu extends ViewScene {
 
     @Override
     public void onCreateScene(Scene scene, BorderPane pane) {
-//        Media media = new Media(new File("res/raw/pac_man_intro.mp3").toURI().toString());
-//        MediaPlayer mediaPlayer = new MediaPlayer(media);
-//        mediaPlayer.play();
+        Media media = new Media(new File("res/raw/pac_man_intro.mp3").toURI().toString());
+        MediaPlayer mediaPlayer = new MediaPlayer(media);
+        mediaPlayer.play();
 
         VBox vBox = new VBox();
         vBox.setFillWidth(true);
@@ -231,23 +231,23 @@ public class Menu extends ViewScene {
 
         // 10 fps
         int durationPacManAnimation = 96000000;
-        registerTimeOutListener(new TimeOutListener() {
+        registerTimeOutCallback(new TimeOutCallback() {
             @Override
-            public void timeOutListenerCallback() {
+            public void timeOutCallback() {
                 pacMan.wobble();
 
-                registerTimeOutListener(this, durationPacManAnimation);
+                registerTimeOutCallback(this, durationPacManAnimation);
             }
         }, durationPacManAnimation);
 
         // 60 fps
         int durationPhantom = 96000000;
-        registerTimeOutListener(new TimeOutListener() {
+        registerTimeOutCallback(new TimeOutCallback() {
             @Override
-            public void timeOutListenerCallback() {
+            public void timeOutCallback() {
                 phantom.wobble();
 
-                registerTimeOutListener(this, durationPhantom);
+                registerTimeOutCallback(this, durationPhantom);
             }
         }, durationPhantom);
 
@@ -279,9 +279,9 @@ public class Menu extends ViewScene {
 
         // 60 fps
         int durationMovingBlocks = 16000000;
-        registerTimeOutListener(new TimeOutListener() {
+        registerTimeOutCallback(new TimeOutCallback() {
             @Override
-            public void timeOutListenerCallback() {
+            public void timeOutCallback() {
                 for(Rectangle rectangle : rectangles) {
                     double pos = rectangle.getLayoutX();
                     if(pos < 0)
@@ -290,7 +290,7 @@ public class Menu extends ViewScene {
                     rectangle.setLayoutX(pos - width);
                 }
 
-                registerTimeOutListener(this, durationMovingBlocks);
+                registerTimeOutCallback(this, durationMovingBlocks);
             }
         }, durationMovingBlocks);
     }
@@ -299,7 +299,7 @@ public class Menu extends ViewScene {
         textStateView.setText(message);
         textStateView.setVisible(true);
 
-        registerTimeOutListener(() -> {
+        registerTimeOutCallback(() -> {
             textStateView.setVisible(false);
         }, 3000000000L);
     }

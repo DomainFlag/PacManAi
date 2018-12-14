@@ -39,8 +39,13 @@ public class FieldView extends ImageView implements Inflater, Observer {
         changeLayout(vector);
     }
 
-    public void inflateImage(String image){
+    public void inflateImage(String image) {
         setImage(images.get(image));
+    }
+
+    public void changeLayout(Vector vector) {
+        setLayoutX(vector.getX() * Constants.TILE_DIMEN_DEFAULT);
+        setLayoutY(vector.getY() * Constants.TILE_DIMEN_DEFAULT);
     }
 
     @Override
@@ -53,11 +58,6 @@ public class FieldView extends ImageView implements Inflater, Observer {
                 root.getChildren().remove(this);
             else root.getChildren().add(this);
         }
-    }
-
-    public void changeLayout(Vector vector) {
-        setLayoutX(vector.getX() * Constants.TILE_DIMEN_DEFAULT);
-        setLayoutY(vector.getY() * Constants.TILE_DIMEN_DEFAULT);
     }
 
     @Override

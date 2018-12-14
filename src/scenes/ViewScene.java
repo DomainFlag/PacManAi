@@ -11,21 +11,17 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
-import tools.Log;
 import views.WindowBarView;
 
-import javax.swing.text.View;
-import java.sql.Time;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import static javafx.scene.input.KeyCode.ESCAPE;
 
 public abstract class ViewScene {
 
-    public interface TimeOutListener {
-        void timeOutListenerCallback();
+    public interface TimeOutCallback {
+        void timeOutCallback();
     }
 
     private Scenemator scenemator;
@@ -36,7 +32,7 @@ public abstract class ViewScene {
     private List<TimeOut> timeOutListeners = new ArrayList<>();
 
     private boolean activeScene = false;
-    private int animationTime = 100000000;
+    private long animationTime = 100000000L;
 
     public ViewScene(Scenemator scenemator, String title) {
         this.scenemator = scenemator;
@@ -86,12 +82,8 @@ public abstract class ViewScene {
         return scenemator;
     }
 
-    public void setAnimationTime(int animationTime) {
+    public void setAnimationTime(long animationTime) {
         this.animationTime = animationTime;
-    }
-
-    public void setScene(Scene scene) {
-        scenemator.start();
     }
 
     private void animateScene() {
@@ -119,8 +111,8 @@ public abstract class ViewScene {
         animationTimer.start();
     }
 
-    public void registerTimeOutListener(TimeOutListener timeOutListener, long duration) {
-        timeOutListeners.add(new TimeOut(timeOutListener, duration));
+    public void registerTimeOutCallback(TimeOutCallback timeOutCallback, long duration) {
+        timeOutListeners.add(new TimeOut(timeOutCallback, duration));
     }
 
     private void setOnKeySceneListener(Scene scene) {
@@ -147,18 +139,18 @@ public abstract class ViewScene {
     private class TimeOut {
         private long duration;
         private LongProperty lastUpdateTime = new SimpleLongProperty(0);
-        private TimeOutListener timeOutListener;
+        private TimeOutCallback timeOutCallback;
         private boolean active = false;
 
-        private TimeOut(TimeOutListener timeOutListener, long duration) {
-            this.timeOutListener = timeOutListener;
+        private TimeOut(TimeOutCallback timeOutCallback, long duration) {
+            this.timeOutCallback = timeOutCallback;
             this.duration = duration;
         }
 
         private boolean resolve(long timestamp) {
             if(active) {
                 if(timestamp - lastUpdateTime.get() > duration) {
-                    timeOutListener.timeOutListenerCallback();
+                    timeOutCallback.timeOutCallback();
 
                     return true;
                 }

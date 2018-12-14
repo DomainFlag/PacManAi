@@ -13,11 +13,6 @@ public class PacMan extends Spirit {
         super(vector);
     }
 
-    @Override
-    public String getDefaultImage() {
-        return FieldView.PACMAN_HUNGRY;
-    }
-
     public void updatePosition(Direction direction) {
         this.direction = direction.getVector();
 
@@ -54,5 +49,10 @@ public class PacMan extends Spirit {
         }
 
         wobble();
+    }
+
+    @Override
+    public String getDefaultImage() {
+        return FieldView.PACMAN_HUNGRY;
     }
 }
